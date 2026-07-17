@@ -117,11 +117,20 @@
                 </button>
             </div>
 
-            <!-- Indicador de Status do Grounding -->
-            <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs px-3 py-1.5 rounded-full font-semibold flex items-center gap-1.5 shadow-xs">
-                <span class="h-2 w-2 rounded-full bg-emerald-500 animate-ping"></span>
-                Suporte Inteligente Ativo
-            </span>
+            <!-- Monitores de Saúde do Sistema (Empilhados para economia de espaço) -->
+            <div class="flex flex-col gap-1.5">
+                <!-- Indicador 1: Grounding (Central de Ajuda) -->
+                <span id="connection-status-badge" class="bg-slate-50 text-slate-500 border border-slate-200 text-[10px] px-2.5 py-1 rounded-full font-semibold flex items-center gap-1.5 shadow-xs transition-colors duration-300" title="Verificando conexão com a Central de Ajuda...">
+                    <span id="connection-status-dot" class="h-1.5 w-1.5 rounded-full bg-slate-400 animate-pulse"></span>
+                    <span id="connection-status-text">Central: Conectando...</span>
+                </span>
+                
+                <!-- Indicador 2: Motor de IA (Gemini API) -->
+                <span id="gemini-status-badge" class="bg-slate-50 text-slate-500 border border-slate-200 text-[10px] px-2.5 py-1 rounded-full font-semibold flex items-center gap-1.5 shadow-xs transition-colors duration-300" title="Verificando disponibilidade do Proxy do Gemini...">
+                    <span id="gemini-status-dot" class="h-1.5 w-1.5 rounded-full bg-slate-400 animate-pulse"></span>
+                    <span id="gemini-status-text">Gemini: Conectando...</span>
+                </span>
+            </div>
         </div>
     </header>
 
@@ -658,6 +667,89 @@ Por favor, **gostaria de falar com o nosso time de suporte ou abrir um chamado?*
             `;
             document.getElementById('log-connected-user').innerText = "Nenhum usuário conectado.";
         }
+
+        async function checkHelpCenterStatus() {
+            const badge = document.getElementById('connection-status-badge');
+            const dot = document.getElementById('connection-status-dot');
+            const text = document.getElementById('connection-status-text');
+
+            if (!badge) return;
+
+            // 1. Validação rápida: Usuário está sem internet local?
+            if (!navigator.onLine) {
+                setOfflineStatus(badge, dot, text, "Sem Internet");
+                return;
+            }
+
+            try {
+                // 2. Ping real na Central da Feegow (usando no-cors para não ser barrado pela segurança deles)
+                await fetch('https://ajuda.feegow.com/support/home', { mode: 'no-cors', cache: 'no-store' });
+                
+                // Sucesso: A central respondeu!
+                badge.className = "bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] px-2.5 py-1 rounded-full font-semibold flex items-center gap-1.5 shadow-xs transition-colors duration-300";
+                dot.className = "h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping";
+                text.innerText = "Central: Online";
+            } catch (error) {
+                // Erro: O domínio da Feegow caiu, bloqueio de rede ou falha de DNS
+                setOfflineStatus(badge, dot, text, "Central Indisponível");
+            }
+        }
+
+        // Função auxiliar para pintar o selo de vermelho e pausar animações
+        function setOfflineStatus(badge, dot, text, message) {
+            badge.className = "bg-rose-50 text-rose-700 border border-rose-200 text-[10px] px-2.5 py-1 rounded-full font-semibold flex items-center gap-1.5 shadow-xs transition-colors duration-300";
+            dot.className = "h-1.5 w-1.5 rounded-full bg-rose-500"; // Remove o "animate-ping" visualmente
+            text.innerText = message;
+        }
+
+        // Nova verificação de saúde exclusiva para o backend do Gemini
+        async function checkGeminiStatus() {
+            const badge = document.getElementById('gemini-status-badge');
+            const dot = document.getElementById('gemini-status-dot');
+            const text = document.getElementById('gemini-status-text');
+
+            if (!badge) return;
+
+            if (!navigator.onLine) {
+                setOfflineStatus(badge, dot, text, "Gemini: Sem Rede");
+                return;
+            }
+
+            try {
+                // Dispara um ping super leve (OPTIONS pre-flight) para o proxy Vercel
+                // Isso apenas checa se o servidor está ativo sem gastar cota na API real da Google
+                const response = await fetch('/api/chat', { method: 'OPTIONS' });
+                
+                if (response.ok) {
+                    badge.className = "bg-indigo-50 text-indigo-700 border border-indigo-200 text-[10px] px-2.5 py-1 rounded-full font-semibold flex items-center gap-1.5 shadow-xs transition-colors duration-300";
+                    dot.className = "h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse";
+                    text.innerText = "Gemini: Online";
+                } else {
+                    setOfflineStatus(badge, dot, text, "Gemini: Erro no Servidor");
+                }
+            } catch (error) {
+                setOfflineStatus(badge, dot, text, "Gemini: Backend Inacessível");
+            }
+        }
+
+        // Iniciar verificações: ao carregar, a cada 30 segundos, e quando a internet oscilar
+        window.addEventListener('load', () => {
+            checkHelpCenterStatus();
+            checkGeminiStatus();
+            setInterval(() => {
+                checkHelpCenterStatus();
+                checkGeminiStatus();
+            }, 30000); 
+        });
+        window.addEventListener('offline', () => {
+            checkHelpCenterStatus();
+            checkGeminiStatus();
+        });
+        window.addEventListener('online', () => {
+            checkHelpCenterStatus();
+            checkGeminiStatus();
+        });
+
 
         // --- NOVAS FUNÇÕES: CENTRAL DE PRODUTIVIDADE COM GEMINI ---
 
