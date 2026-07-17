@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ErikIA - Central de Ajuda Feegow</title>
+    <!-- Tailwind CSS para Design Premium e Responsivo -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons para Ícones Consistentes -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Marked.js para renderizar respostas ricas em Markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Barras de rolagem personalizadas elegantes */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 179, 155, 0.3);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00b39b;
+        }
+        @keyframes pulse-teal {
+            0%, 100% { box-shadow: 0 0 10px rgba(0, 179, 155, 0.2); }
+            50% { box-shadow: 0 0 20px rgba(0, 179, 155, 0.5); }
+        }
+        .glow-active {
+            animation: pulse-teal 2.5s infinite;
+        }
+        /* Estilização para o Markdown renderizado pela ErikIA */
+        .prose-response p {
+            margin-bottom: 0.75rem;
+        }
+        .prose-response p:last-child {
+            margin-bottom: 0;
+        }
+        .prose-response ul, .prose-response ol {
+            margin-left: 1.25rem;
+            margin-bottom: 0.75rem;
+        }
+        .prose-response ul {
+            list-style-type: disc;
+        }
+        .prose-response ol {
+            list-style-type: decimal;
+        }
+        .prose-response li {
+            margin-bottom: 0.25rem;
+        }
+        .prose-response a {
+            color: #00b39b;
+            text-decoration: underline;
+            font-weight: 600;
+        }
+        .prose-response a:hover {
+            color: #009a84;
+        }
+        .prose-response strong {
+            font-weight: 700;
+            color: #1b2734;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 h-screen flex flex-col overflow-hidden">
+
+    <!-- Container Global de Notificações Toast -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- 1. CABEÇALHO PRINCIPAL DO PORTAL (Design Fiel e Limpo) -->
+    <header class="bg-white text-[#1B2734] border-b border-slate-200 px-6 py-4 flex flex-wrap items-center justify-between z-10 shadow-sm">
+        <div class="flex items-center space-x-3">
+            <!-- Ícone de Livro/Central de Ajuda -->
+            <div class="bg-[#00b39b]/10 p-2.5 rounded-xl border border-[#00b39b]/20 text-[#00b39b]">
+                <i class="fa-solid fa-book-open text-2xl"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h1 class="text-xl font-extrabold tracking-tight text-[#1B2734]">ErikIA</h1>
+                    <span class="bg-[#00b39b]/10 text-[#00b39b] text-[10px] px-2.5 py-0.5 rounded-full font-bold border border-[#00b39b]/20">
+                        Assistente Virtual Feegow
+                    </span>
+                </div>
+                <p class="text-xs text-slate-500 font-medium">Sua busca inteligente integrada à nossa Central de Ajuda</p>
+            </div>
+        </div>
+        
+        <!-- Bloco de Ações e Usuário à Direita -->
+        <div class="flex items-center space-x-4 mt-3 sm:mt-0">
+            <!-- Informações do Usuário Conectado -->
+            <div id="user-info-box" class="flex items-center gap-3 bg-slate-50 p-2 rounded-xl border border-slate-200">
+                <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-[#00b39b] to-[#00d1b5] text-white flex items-center justify-center font-bold text-xs shadow-inner">
+                    <i class="fa-solid fa-user-check"></i>
+                </div>
+                <div class="text-left min-w-0 max-w-[150px]">
+                    <h4 id="user-display-name" class="text-xs font-bold text-[#1B2734] truncate">Andre Mano</h4>
+                    <p id="user-display-email" class="text-[9px] text-slate-400 truncate">andre.mano@docplanner.com</p>
+                </div>
+                <button onclick="handleUserSignOut()" class="text-slate-400 hover:text-rose-500 transition-colors p-1" title="Desconectar">
+                    <i class="fa-solid fa-right-from-bracket text-xs"></i>
+                </button>
+            </div>
+
+            <!-- Indicador de Status do Grounding -->
+            <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs px-3 py-1.5 rounded-full font-semibold flex items-center gap-1.5 shadow-xs">
+                <span class="h-2 w-2 rounded-full bg-emerald-500 animate-ping"></span>
+                Suporte Inteligente Ativo
+            </span>
+        </div>
+    </header>
+
+    <!-- 2. CONTAINER PRINCIPAL DO CHAT (Espaço Ampliado) -->
+    <main class="flex-1 flex flex-col bg-slate-100 h-full overflow-hidden relative">
+        
+        <!-- Área Foco das Mensagens -->
+        <div id="chat-messages-scroll" class="flex-1 overflow-y-auto p-6 space-y-4">
+            
+            <!-- Canal Oficial Banner -->
+            <div class="flex justify-center my-3">
+                <span class="bg-emerald-500/10 text-emerald-700 border border-emerald-500/20 rounded-full px-5 py-1.5 text-xs font-bold shadow-xs flex items-center gap-1.5">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    Canal Oficial de Atendimento Automatizado - Feegow
+                </span>
+            </div>
+
+            <!-- Mensagem Inicial Padrão da ErikIA -->
+            <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-[#00b39b] to-[#00d1b5] text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-md">E</div>
+                <div class="bg-white border border-slate-200 rounded-2xl rounded-tl-none p-4 max-w-[80%] shadow-xs">
+                    <span class="block text-[10px] font-bold uppercase tracking-wider mb-1 text-[#00b39b]">ErikIA</span>
+                    <p class="text-sm leading-relaxed text-slate-800">
+                        Olá! Eu sou a <strong>ErikIA</strong>, a assistente virtual inteligente do Feegow.
+                    </p>
+                    <p class="text-sm leading-relaxed text-slate-800 mt-2">
+                        Estou conectada em tempo real com toda a nossa base de conhecimento e artigos da central de ajuda. Digite sua dúvida abaixo de forma livre e eu buscarei o passo a passo exato para você! 🚀
+                    </p>
+                </div>
+            </div>
+
+            <!-- Log de Cliente Conectado -->
+            <div class="flex justify-center my-2">
+                <span class="bg-[#1B2734]/5 text-[#1B2734] border border-[#1B2734]/10 rounded-lg px-3 py-1.5 text-[10px] font-semibold flex items-center gap-1.5">
+                    <i class="fa-solid fa-fingerprint"></i>
+                    Cliente conectado: <strong id="log-connected-user">Andre Mano (andre.mano@docplanner.com)</strong>
+                </span>
+            </div>
+
+        </div>
+
+        <!-- 3. BARRA DE ENTRADA DO CHAT -->
+        <div class="p-4 bg-white border-t border-slate-200 font-sans">
+            <div class="max-w-4xl mx-auto flex gap-3">
+                <input type="text" id="chat-input-field" placeholder="Digite sua dúvida aqui... Ex: 'Como configurar NOA notes' ou 'Como faturar guia TISS'" 
+                       class="flex-1 pl-4 pr-4 py-3.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#00b39b]/40 focus:border-[#00b39b] transition-all text-sm bg-slate-50 focus:bg-white"
+                       onkeydown="if(event.key === 'Enter') submitUserQuery()">
+                <button id="send-query-btn" onclick="submitUserQuery()" class="bg-[#00b39b] hover:bg-[#009a84] text-white rounded-xl px-6 flex items-center justify-center transition-colors shadow-md shadow-[#00b39b]/10">
+                    <i class="fa-solid fa-paper-plane text-sm"></i>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- 4. ENGENHARIA DE PROMPTS E LÓGICA DE GROUNDING -->
+    <script>
+        // Memória temporária de interações para envio inteligente de feedbacks
+        const chatMemoryStore = {};
+        
+        // Base de contingência local RAG (caso ocorram problemas extremos de conexão de rede externa)
+        const safetyBackupKnowledge = [
+            {
+                keywords: ["noa", "notes", "anotador", "ia", "resumo", "resumos", "transcrever"],
+                topic: "Configurar NOA Notes",
+                title: "Como ativar, configurar e usar o NOA Notes no prontuário",
+                url: "https://ajuda.feegow.com/support/solutions/articles/67000743976-como-ativar-configurar-e-usar-o-noa-notes-no-prontu%C3%A1rio",
+                content: `1. **Ativar os Assentos:** Vá em **Configuração > Outras configurações**. Clique em **Gerenciar** e em **Adicionar Assentos** para designar quais profissionais terão o NOA ativo.\n2. **Permissão de Visualização:** O profissional de saúde deve possuir a permissão "Visualizar Resumos de IA" ativa no seu perfil.\n3. **Uso no Prontuário:** Ao abrir o atendimento, clique no ícone do NOA no canto inferior direito para iniciar o anotador por áudio.`
+            },
+            {
+                keywords: ["sms", "mensagem", "final de semana", "sábado", "domingo", "72h", "lembrete"],
+                topic: "SMS de Lembrete de Final de Semana",
+                title: "O que fazer quando o envio de e-mail/SMS não é enviado no final de semana?",
+                url: "https://ajuda.feegow.com/support/solutions/articles/67000665594-o-que-fazer-quando-o-envio-de-e-mail-sms-n%C3%A3o-%C3%A9-enviado-no-final-de-semana-",
+                content: `1. Acesse o menu **Configurações > Eventos de e-mail/SMS**.\n2. Edite o evento de lembrete de consultas.\n3. Se o evento estiver configurado com antecedência de **72h**, as consultas marcadas para segunda-feira serão disparadas na **sexta-feira**, evitando envios nos sábados e domingos.`
+            },
+            {
+                keywords: ["guia", "tiss", "regime", "atendimento", "sadt"],
+                topic: "Padrão TISS - Regime de Atendimento",
+                title: "Adequações ao Padrão TISS - Regime de Atendimento",
+                url: "https://ajuda.feegow.com/support/solutions/articles/67000715357-vers%C3%A3o-04-01-00-tiss-adequac%C3%B5es-ao-padr%C3%A3o-tiss-set-2022",
+                content: `No preenchimento de guias SADT sob o padrão TISS, foi adicionado o preenchimento obrigatório do campo **Regime de Atendimento** (Ambulatorial, Domiciliar, Internação, Pronto-Socorro ou Telessaúde) para evitar glosas financeiras junto aos convênios.`
+            }
+        ];
+
+        // Função utilitária para exibir alertas flutuantes (toasts)
+        function notifyUser(message, type = "error") {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `flex items-center gap-2.5 p-4 mb-2 text-xs font-semibold rounded-xl shadow-xl transition-all duration-300 transform translate-y-0 opacity-100 max-w-sm pointer-events-auto ${
+                type === 'success' ? 'bg-emerald-500 text-white' : 'bg-[#1B2734] text-white border-l-4 border-rose-500'
+            }`;
+            
+            toast.innerHTML = `
+                <i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-triangle-exclamation'} text-sm"></i>
+                <div class="flex-1">${message}</div>
+            `;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.replace('opacity-100', 'opacity-0');
+                toast.classList.add('translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 4500);
+        }
+
+        // Função principal que faz a chamada segura para o Proxy do nosso Back-end na Vercel
+        async function fetchGeminiGroundedResponse(userQuery) {
+            // Endereço relativo seguro do proxy na Vercel
+            const apiUrl = `/api/chat`;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: userQuery })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Erro na API: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                if (data.text) {
+                    return { 
+                        status: "success", 
+                        text: data.text, 
+                        citations: data.citations || [] 
+                    };
+                }
+
+                return { status: "empty" };
+
+            } catch (err) {
+                console.warn("Proxy seguro indisponível ou em ambiente local. Verifique as configurações.", err);
+                return { status: "fallback" };
+            }
+        }
+
+        // Controladores visuais do chat (Digitação)
+        function showLoadingDotAnimation() {
+            const container = document.getElementById('chat-messages-scroll');
+            const indicator = document.createElement('div');
+            indicator.id = "chat-typing-dot";
+            indicator.className = "flex items-start gap-3";
+            indicator.innerHTML = `
+                <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-[#00b39b] to-[#00d1b5] text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-md">E</div>
+                <div class="bg-white border border-slate-200 rounded-2xl rounded-tl-none p-3 shadow-xs text-sm flex items-center gap-1.5 text-slate-400">
+                    <span class="font-bold text-xs text-[#00b39b] mr-1">ErikIA</span>
+                    <span class="text-xs text-slate-500 font-medium">consultando a Central de Ajuda</span>
+                    <span class="h-1.5 w-1.5 bg-[#00b39b] rounded-full animate-bounce" style="animation-delay: 0ms"></span>
+                    <span class="h-1.5 w-1.5 bg-[#00b39b] rounded-full animate-bounce" style="animation-delay: 150ms"></span>
+                    <span class="h-1.5 w-1.5 bg-[#00b39b] rounded-full animate-bounce" style="animation-delay: 300ms"></span>
+                </div>
+            `;
+            container.appendChild(indicator);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function removeLoadingDotAnimation() {
+            const indicator = document.getElementById('chat-typing-dot');
+            if (indicator) indicator.remove();
+        }
+
+        // Adiciona novas mensagens dinâmicas ao chat
+        function printChatMessage(sender, text, isUser = false, feedBackOptions = null, isRichMarkdown = false) {
+            const container = document.getElementById('chat-messages-scroll');
+            const wrapper = document.createElement('div');
+            wrapper.className = `flex items-start gap-3 ${isUser ? 'justify-end' : ''}`;
+
+            let avatarBlock = '';
+            if (!isUser) {
+                avatarBlock = `<div class="w-8 h-8 rounded-full bg-gradient-to-tr from-[#00b39b] to-[#00d1b5] text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-md">E</div>`;
+            }
+
+            const bubbleTheme = isUser
+                ? 'bg-[#00b39b] text-white rounded-2xl rounded-tr-none p-4 max-w-[80%] shadow-md text-sm font-medium'
+                : 'bg-white border border-slate-200 rounded-2xl rounded-tl-none p-4.5 max-w-[80%] shadow-md text-sm text-[#1b2734]';
+
+            const nameLabel = isUser ? 'Você' : 'ErikIA';
+            const labelColor = isUser ? 'text-[#e6fffc]' : 'text-[#00b39b]';
+
+            // Processamento do corpo da mensagem
+            let bodyHTML = text;
+            if (isRichMarkdown && typeof marked !== 'undefined') {
+                bodyHTML = marked.parse(text);
+            } else {
+                bodyHTML = text.replace(/\n/g, '<br>');
+            }
+
+            const uniqueId = feedBackOptions ? feedBackOptions.id : 'msg-' + Date.now();
+
+            let feedbackPanel = '';
+            if (feedBackOptions) {
+                feedbackPanel = `
+                    <div class="mt-4 pt-3 border-t border-slate-100 flex flex-col gap-2">
+                        <span class="text-xs font-bold text-slate-500">${feedBackOptions.promptQuestion}</span>
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <div class="flex gap-2" id="vote-section-${feedBackOptions.id}">
+                                <button onclick="registerSupportVote('${feedBackOptions.id}', '${feedBackOptions.topicSummary}', 'Sim')" 
+                                        class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold px-4 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5 shadow-xs">
+                                    <i class="fa-solid fa-thumbs-up"></i> Sim, resolveu!
+                                </button>
+                                <button onclick="registerSupportVote('${feedBackOptions.id}', '${feedBackOptions.topicSummary}', 'Não')" 
+                                        class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold px-4 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5 shadow-xs">
+                                    <i class="fa-solid fa-thumbs-down"></i> Não ajudou
+                                </button>
+                            </div>
+                            <!-- Botão de Cópia Integrada -->
+                            <button onclick="copyToClipboard('${uniqueId}')" id="copy-action-btn-${uniqueId}" 
+                                    class="bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 font-bold px-4 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5">
+                                <i class="fa-solid fa-copy"></i> Copiar Texto
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            wrapper.innerHTML = `
+                ${!isUser ? avatarBlock : ''}
+                <div class="${bubbleTheme}">
+                    <span class="block text-[10px] font-bold uppercase tracking-wider mb-1.5 ${labelColor}">${nameLabel}</span>
+                    <div id="content-body-${uniqueId}" class="prose-response leading-relaxed font-normal">${bodyHTML}</div>
+                    ${feedbackPanel}
+                </div>
+            `;
+
+            container.appendChild(wrapper);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Copiar resposta do chat (Compatível com Sandbox)
+        function copyToClipboard(msgId) {
+            const element = document.getElementById(`content-body-${msgId}`);
+            if (!element) return;
+            const textToCopy = element.innerText;
+
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = textToCopy;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextArea);
+
+            notifyUser("Texto copiado para a área de transferência!", "success");
+
+            // Feedback visual no botão de cópia
+            const copyBtn = document.getElementById(`copy-action-btn-${msgId}`);
+            if (copyBtn) {
+                const originalContent = copyBtn.innerHTML;
+                copyBtn.innerHTML = `<i class="fa-solid fa-check text-emerald-500"></i> Copiado!`;
+                copyBtn.className = "bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold px-4 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5 shadow-xs";
+                
+                setTimeout(() => {
+                    copyBtn.innerHTML = originalContent;
+                    copyBtn.className = "bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 font-bold px-4 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5";
+                }, 2000);
+            }
+        }
+
+        // Submissão e processamento da pergunta do usuário
+        async function submitUserQuery() {
+            const inputField = document.getElementById('chat-input-field');
+            const queryText = inputField.value.trim();
+            if (!queryText) return;
+
+            // Limpa o input imediatamente
+            inputField.value = '';
+
+            // Renderiza a pergunta do usuário na tela
+            printChatMessage('Você', queryText, true);
+
+            showLoadingDotAnimation();
+
+            // Identifica saudações comuns para respostas empáticas rápidas
+            const lowerQuery = queryText.toLowerCase().replace(/[?.,!]/g, "").trim();
+            const greetings = ["oi", "olá", "ola", "bom dia", "boa tarde", "boa noite", "tudo bem", "tudo bom"];
+            if (greetings.includes(lowerQuery)) {
+                setTimeout(() => {
+                    removeLoadingDotAnimation();
+                    printChatMessage('ErikIA', "Olá, Andre! Tudo ótimo por aqui. Qual dúvida, módulo ou configuração técnica do Feegow nós vamos analisar hoje? 💜");
+                }, 800);
+                return;
+            }
+
+            // Mapeia resumo curto do tema para feedback (primeiras 5 palavras)
+            const cleanText = queryText.replace(/[^\w\s]/g, '');
+            const topicSummary = cleanText.split(' ').slice(0, 5).join(' ');
+
+            // Envia requisição para a API Grounded
+            const responseData = await fetchGeminiGroundedResponse(queryText);
+            removeLoadingDotAnimation();
+
+            const messageUniqueId = 'fb-' + Date.now();
+
+            if (responseData.status === "success") {
+                let answerMarkdown = responseData.text;
+
+                // Anexa as citações reais no final da resposta
+                if (responseData.citations && responseData.citations.length > 0) {
+                    answerMarkdown += "\n\n📚 **Artigos de Referência Encontrados:**\n";
+                    responseData.citations.slice(0, 2).forEach(src => {
+                        answerMarkdown += `* [${src.title}](${src.uri})\n`;
+                    });
+                }
+
+                // Armazena na memória temporária para relatórios de feedback
+                chatMemoryStore[messageUniqueId] = {
+                    query: queryText,
+                    answer: responseData.text
+                };
+
+                printChatMessage('ErikIA', answerMarkdown, false, {
+                    id: messageUniqueId,
+                    topicSummary: topicSummary,
+                    promptQuestion: "Esse artigo ajudou você a resolver o caso?"
+                }, true);
+
+            } else {
+                // Ativação do RAG Backup Local caso a API falhe ou o Proxy esteja inacessível
+                let backupMatch = null;
+                for (let doc of safetyBackupKnowledge) {
+                    const matched = doc.keywords.some(kw => lowerQuery.includes(kw));
+                    if (matched) {
+                        backupMatch = doc;
+                        break;
+                    }
+                }
+
+                if (backupMatch) {
+                    const backupMarkdown = `Oi! Vamos analisar isso juntos. 💜 *(Mecanismo de Segurança Local Ativo)*
+
+Aqui está o procedimento oficial extraído da nossa base para **${backupMatch.topic}**:
+
+${backupMatch.content}
+
+📚 *Fonte Oficial:* [${backupMatch.title}](${backupMatch.url})`;
+
+                    chatMemoryStore[messageUniqueId] = {
+                        query: queryText,
+                        answer: backupMatch.content
+                    };
+
+                    printChatMessage('ErikIA', backupMarkdown, false, {
+                        id: messageUniqueId,
+                        topicSummary: backupMatch.topic,
+                        promptQuestion: "Esse artigo ajudou você a resolver o caso?"
+                    }, true);
+
+                } else {
+                    // Impede alucinações caso não localize nada
+                    const notFoundMarkdown = `Olá, Andre Mano. Consultei o acervo técnico do Feegow mas não localizei artigos oficiais para essa dúvida específica.
+
+Por favor, **gostaria de falar com o nosso time de suporte ou abrir um chamado?** Você pode clicar no botão de "Ajuda" (ícone de interrogação) no menu superior do seu Feegow para ser atendido pelo nosso time técnico de Customer Care!`;
+
+                    printChatMessage('ErikIA', notFoundMarkdown, false);
+                }
+            }
+        }
+
+        // Função de Classificação Inteligente Cruzada (Pergunta + Resposta)
+        function analyzeCategoryByContent(query, answer) {
+            const corpus = (query + " " + answer).toLowerCase();
+
+            if (corpus.includes("noa") || corpus.includes("notes") || corpus.includes("anotador") || corpus.includes("resumo") || corpus.includes("ia") || corpus.includes("atestado")) return "Prontuário";
+            if (corpus.includes("guia") || corpus.includes("tiss") || corpus.includes("sadt") || corpus.includes("faturamento") || corpus.includes("convênio") || corpus.includes("xml")) return "Faturamento";
+            if (corpus.includes("configurar") || corpus.includes("configuração") || corpus.includes("parâmetro") || corpus.includes("permissão") || corpus.includes("ativar")) return "Configurações";
+            if (corpus.includes("agenda") || corpus.includes("agendamento") || corpus.includes("médico") || corpus.includes("sms") || corpus.includes("lembrete")) return "Agenda";
+            if (corpus.includes("pagamento") || corpus.includes("financeiro") || corpus.includes("caixa") || corpus.includes("saldo") || corpus.includes("conta")) return "Financeiro";
+            if (corpus.includes("cadastro") || corpus.includes("funcionário") || corpus.includes("profissional") || corpus.includes("paciente") || corpus.includes("perfil")) return "Cadastros";
+
+            return "Outros";
+        }
+
+        // Registro de Feedback e Publicação de Logs no Google Sheets
+        async function registerSupportVote(id, topicSummary, voteValue) {
+            const container = document.getElementById(`vote-section-${id}`);
+            if (!container) return;
+
+            // Busca os dados da memória
+            const interaction = chatMemoryStore[id] || { query: "Dúvida Geral", answer: "" };
+            const finalCategory = analyzeCategoryByContent(interaction.query, interaction.answer);
+            const formattedDate = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+
+            const payload = {
+                "data_uso": formattedDate,
+                "nome_agente": "Andre Mano",
+                "topico_duvida": topicSummary,
+                "categoria": finalCategory,
+                "ajuda_efetiva": voteValue
+            };
+
+            // Atualiza visualmente os botões
+            const brandColor = voteValue === 'Sim' ? 'text-emerald-500' : 'text-rose-500';
+            const iconSymbol = voteValue === 'Sim' ? 'fa-circle-check' : 'fa-circle-xmark';
+
+            container.innerHTML = `
+                <span class="text-xs font-bold ${brandColor} flex items-center gap-1.5 animate-pulse">
+                    <i class="fa-solid ${iconSymbol}"></i> Feedback registrado! Sincronizando com a planilha...
+                </span>
+            `;
+
+            // Publicação assíncrona para o Web App do Google Apps Script
+            const appsScriptWebhookUrl = "https://script.google.com/macros/s/AKfycbwB5Y5Yp0dPo_IcJHaSoIf0xhRjzM3DTFUNJ0XvsDe68hQ0Am7lXCqvJftIMlNKC8_2/exec";
+
+            try {
+                await fetch(appsScriptWebhookUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                notifyUser("Dados enviados com sucesso para a planilha do time!", "success");
+                
+                container.innerHTML = `
+                    <span class="text-xs font-bold ${brandColor} flex items-center gap-1.5">
+                        <i class="fa-solid ${iconSymbol}"></i> Obrigado pelo seu feedback! 💜
+                    </span>
+                `;
+            } catch (err) {
+                console.error("Erro ao enviar dados para a planilha remota:", err);
+                notifyUser("Falha na sincronização de rede. Gravado apenas localmente.");
+            }
+        }
+
+        // Controle de Log Out do Usuário (Simulado)
+        function handleUserSignOut() {
+            notifyUser("Sessão corporativa encerrada!");
+            document.getElementById('user-info-box').innerHTML = `
+                <span class="text-xs font-bold text-rose-500">Sessão Encerrada</span>
+            `;
+            document.getElementById('log-connected-user').innerText = "Nenhum usuário conectado.";
+        }
+    </script>
+</body>
+</html>
