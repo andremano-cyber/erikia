@@ -29,7 +29,7 @@ export default async function handler(req, res) {
 
     // Você pode usar o "gemini-1.5-pro" ou "gemini-2.5-flash". 
     // Ambos possuem excelente motor de pesquisa (Search Grounding).
-    const modelName = "gemini-1.5-pro"; 
+    const modelName = "gemini-3-flash-preview"; 
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`;
 
     let systemInstructions = '';
