@@ -1,5 +1,4 @@
 export default async function handler(req, res) {
-    // Configurações de CORS para aceitar conexões do seu front-end (index.html)
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
@@ -16,47 +15,28 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: `Método ${method} não permitido. Use POST.` });
     }
 
-    const { query, action, context } = req.body;
+    const { query } = req.body;
 
-    if (!query && !context) {
-        return res.status(400).json({ error: 'O campo query ou context é obrigatório.' });
+    if (!query) {
+        return res.status(400).json({ error: 'O campo query é obrigatório.' });
     }
 
     const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
     if (!GEMINI_API_KEY) {
-        console.error("ERRO CRÍTICO: GEMINI_API_KEY ausente no servidor Vercel.");
-        return res.status(500).json({ error: 'Chave da API não configurada.' });
+        console.error("ERRO CRÍTICO: GEMINI_API_KEY não configurada na Vercel.");
+        return res.status(500).json({ error: 'Chave da API do Gemini ausente no servidor.' });
     }
 
-    // Usando o modelo super rápido e leve autorizado na sua chave
+    // Utilizando o modelo Flash Lite (Leve e rápido) sem a ferramenta de Search Grounding
     const modelName = "gemini-3.1-flash-lite"; 
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`;
 
-    let systemInstructions = '';
-    let promptContent = '';
+    const systemInstructions = `Você é a ErikIA, assistente virtual técnica da central de ajuda da Feegow. 
+Sua missão é resolver dúvidas técnicas baseando-se no ecossistema Feegow.
+Responda em formato Markdown de maneira muito objetiva, traga o passo a passo de cliques claro.
+Se a dúvida não estiver relacionada ao sistema Feegow, responda educadamente informando que não localizou o assunto e peça para contatar o suporte.`;
 
-    const currentAction = action || 'chat';
-
-    if (currentAction === 'chat') {
-        systemInstructions = `Você é a ErikIA, assistente virtual altamente técnica da central de ajuda da Feegow. 
-Sua missão é resolver dúvidas técnicas do software.
-Responda em formato Markdown, traga o passo a passo claro.
-Se a dúvida não for relacionada a rotinas de clínica ou sistema médico, responda educadamente informando que você é exclusiva para suporte do Feegow.`;
-
-        promptContent = `Dúvida do usuário: "${query}"\nPor favor, forneça o passo a passo de cliques detalhado.`;
-        
-        // CULPADO REMOVIDO: Nenhuma ferramenta de busca injetada aqui. Zero custos ocultos.
-        
-    } else if (currentAction === 'polish') {
-        systemInstructions = "Você é um revisor de qualidade de atendimento.";
-        promptContent = `Reescreva o rascunho usando tom ${context}:\n\nRascunho: ${query}`;
-    } else if (currentAction === 'draft_email') {
-        systemInstructions = "Redija um e-mail de resposta formal e cordial para o cliente baseado na resolução técnica.";
-        promptContent = `Dúvida: ${query}\nResolução Técnica: ${context}`;
-    } else if (currentAction === 'summarize') {
-        systemInstructions = "Resuma o atendimento técnico em tópicos para fechamento de ticket.";
-        promptContent = `Dúvida: ${query}\nResposta: ${context}`;
-    }
+    const promptContent = `Dúvida do usuário: "${query}"`;
 
     const requestBody = {
         contents: [
@@ -88,14 +68,13 @@ Se a dúvida não for relacionada a rotinas de clínica ou sistema médico, resp
 
         if (candidate && candidate.content?.parts?.[0]?.text) {
             let text = candidate.content.parts[0].text;
-            // Citações dinâmicas de busca removidas pois o Search foi desativado.
             return res.status(200).json({ text, citations: [] });
         }
 
         return res.status(200).json({ error: 'O modelo não retornou um texto válido.' });
 
     } catch (error) {
-        console.error("Erro interno no Node.js:", error.message);
+        console.error("Erro interno catastrófico no servidor:", error.message);
         return res.status(500).json({ error: 'Falha interna na Função Vercel.' });
     }
 }
