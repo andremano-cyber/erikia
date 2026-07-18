@@ -4,78 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ErikIA - Central de Ajuda Feegow</title>
-    <!-- Tailwind CSS para Design Premium, Responsivo e Fluido -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Inter para tipografia moderna e legível -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- FontAwesome Icons para ícones ricos e consistentes -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Marked.js para renderizar as respostas ricas da IA com Markdown nativo -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(0, 179, 155, 0.3);
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #00b39b;
-        }
+        body { font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 179, 155, 0.3); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #00b39b; }
         @keyframes pulse-teal {
             0%, 100% { box-shadow: 0 0 10px rgba(0, 179, 155, 0.2); }
             50% { box-shadow: 0 0 20px rgba(0, 179, 155, 0.5); }
         }
-        .glow-active {
-            animation: pulse-teal 2.5s infinite;
-        }
-        .prose-response p {
-            margin-bottom: 0.75rem;
-        }
-        .prose-response p:last-child {
-            margin-bottom: 0;
-        }
-        .prose-response ul, .prose-response ol {
-            margin-left: 1.25rem;
-            margin-bottom: 0.75rem;
-        }
-        .prose-response ul {
-            list-style-type: disc;
-        }
-        .prose-response ol {
-            list-style-type: decimal;
-        }
-        .prose-response li {
-            margin-bottom: 0.25rem;
-        }
-        .prose-response a {
-            color: #00b39b;
-            text-decoration: underline;
-            font-weight: 600;
-        }
-        .prose-response a:hover {
-            color: #009a84;
-        }
-        .prose-response strong {
-            font-weight: 700;
-            color: #1b2734;
-        }
+        .glow-active { animation: pulse-teal 2.5s infinite; }
+        .prose-response p { margin-bottom: 0.75rem; }
+        .prose-response p:last-child { margin-bottom: 0; }
+        .prose-response ul, .prose-response ol { margin-left: 1.25rem; margin-bottom: 0.75rem; }
+        .prose-response ul { list-style-type: disc; }
+        .prose-response ol { list-style-type: decimal; }
+        .prose-response li { margin-bottom: 0.25rem; }
+        .prose-response a { color: #00b39b; text-decoration: underline; font-weight: 600; }
+        .prose-response a:hover { color: #009a84; }
+        .prose-response strong { font-weight: 700; color: #1b2734; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 h-screen flex flex-col overflow-hidden">
 
-    <!-- Container Global para Toasts/Notificações Flutuantes -->
     <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-    <!-- CABEÇALHO PRINCIPAL DO PORTAL -->
     <header class="bg-white text-[#1B2734] border-b border-slate-200 px-6 py-4 flex flex-wrap items-center justify-between z-10 shadow-sm">
         <div class="flex items-center space-x-3">
             <div class="bg-[#00b39b]/10 p-2.5 rounded-xl border border-[#00b39b]/20 text-[#00b39b]">
@@ -107,46 +67,18 @@
                     <p id="user-display-email" class="text-[9px] text-slate-400 truncate">andre.mano@docplanner.com</p>
                 </div>
                 <button onclick="handleUserSignOut()" class="text-slate-400 hover:text-rose-500 transition-colors p-1" title="Desconectar">
-                <i class="fa-solid fa-right-from-bracket text-xs"></i>
-            </button>
+                    <i class="fa-solid fa-right-from-bracket text-xs"></i>
+                </button>
+            </div>
         </div>
+    </header>
 
-        <div class="flex items-center gap-2 text-[10px] font-bold">
-            <!-- Index Status -->
-            <span id="diag-ui" class="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-100 text-slate-500 shadow-xs transition-colors">
-                <i class="fa-solid fa-spinner animate-spin"></i> Index
-            </span>
-            <i class="fa-solid fa-chevron-right text-slate-300 text-[8px]"></i>
-            
-            <!-- Vercel Status -->
-            <span id="diag-vercel" class="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-100 text-slate-500 shadow-xs transition-colors">
-                <i class="fa-solid fa-clock"></i> API
-            </span>
-            <i class="fa-solid fa-chevron-right text-slate-300 text-[8px]"></i>
-            
-            <!-- Gemini Status -->
-            <span id="diag-gemini" class="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-100 text-slate-500 shadow-xs transition-colors">
-                <i class="fa-solid fa-clock"></i> Gemini
-            </span>
-            
-            <button onclick="runSystemDiagnostics()" class="ml-1 text-slate-400 hover:text-[#00b39b] transition-colors" title="Recarregar Teste">
-                <i class="fa-solid fa-rotate-right"></i>
-            </button>
-        </div>
-    </div>
-</header>
-
-<!-- CONTAINER PRINCIPAL DO CHAT -->
     <main class="flex-1 flex flex-row bg-slate-100 h-full overflow-hidden relative">
-        
         <div class="flex-1 flex flex-col h-full overflow-hidden relative">
-            
             <div id="chat-messages-scroll" class="flex-1 overflow-y-auto p-6 space-y-4">
-                
                 <div class="flex justify-center my-3">
                     <span class="bg-emerald-500/10 text-emerald-700 border border-emerald-500/20 rounded-full px-5 py-1.5 text-xs font-bold shadow-xs flex items-center gap-1.5">
-                        <i class="fa-solid fa-shield-halved"></i>
-                        Canal Oficial de Atendimento Automatizado - Feegow
+                        <i class="fa-solid fa-shield-halved"></i> Canal Oficial de Atendimento Automatizado - Feegow
                     </span>
                 </div>
 
@@ -158,23 +90,15 @@
                             Olá! Eu sou a <strong>ErikIA</strong>, a assistente virtual inteligente do Feegow.
                         </p>
                         <p class="text-sm leading-relaxed text-slate-800 mt-2">
-                            Estou conectada em tempo real com toda a nossa base de conhecimento e artigos da central de ajuda. Digite sua dúvida abaixo de forma livre e eu buscarei o passo a passo exato para você! 🚀
+                            Estou conectada em tempo real com toda a nossa inteligência. Digite sua dúvida abaixo de forma livre e eu buscarei o passo a passo exato para você! 🚀
                         </p>
                     </div>
                 </div>
-
-                <div class="flex justify-center my-2">
-                    <span class="bg-[#1B2734]/5 text-[#1B2734] border border-[#1B2734]/10 rounded-lg px-3 py-1.5 text-[10px] font-semibold flex items-center gap-1.5">
-                        <i class="fa-solid fa-fingerprint"></i>
-                        Cliente conectado: <strong id="log-connected-user">Andre Mano (andre.mano@docplanner.com)</strong>
-                    </span>
-                </div>
-
             </div>
 
             <div class="p-4 bg-white border-t border-slate-200 font-sans">
                 <div class="max-w-4xl mx-auto flex gap-3">
-                    <input type="text" id="chat-input-field" placeholder="Digite sua dúvida aqui... Ex: 'Como configurar NOA notes' ou 'Como faturar guia TISS'" 
+                    <input type="text" id="chat-input-field" placeholder="Digite sua dúvida aqui... Ex: 'Como faturar guia TISS'" 
                            class="flex-1 pl-4 pr-4 py-3.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#00b39b]/40 focus:border-[#00b39b] transition-all text-sm bg-slate-50 focus:bg-white"
                            onkeydown="if(event.key === 'Enter') submitUserQuery()">
                     <button id="send-query-btn" onclick="submitUserQuery()" class="bg-[#00b39b] hover:bg-[#009a84] text-white rounded-xl px-6 flex items-center justify-center transition-colors shadow-md shadow-[#00b39b]/10">
@@ -188,8 +112,7 @@
             <div>
                 <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
                     <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                        <i class="fa-solid fa-wand-magic-sparkles text-indigo-500"></i>
-                        Assistentes de Escrita
+                        <i class="fa-solid fa-wand-magic-sparkles text-indigo-500"></i> Assistentes de Escrita
                     </h3>
                     <button onclick="toggleIaToolbox()" class="text-slate-400 hover:text-slate-600">
                         <i class="fa-solid fa-xmark"></i>
@@ -198,8 +121,7 @@
 
                 <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
                     <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                        <i class="fa-solid fa-wand-magic"></i>
-                        Polidor de Mensagens
+                        <i class="fa-solid fa-wand-magic"></i> Polidor de Mensagens
                     </h4>
                     <p class="text-[10px] text-slate-500">Transforme rascunhos em textos amigáveis no tom ideal.</p>
                     <textarea id="polish-input" placeholder="Cole seu rascunho rápido aqui..." class="w-full h-24 p-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs bg-white"></textarea>
@@ -219,22 +141,10 @@
                         <label class="block text-[9px] font-bold text-slate-400 uppercase">Resultado Polido:</label>
                         <div id="polish-output" class="bg-white p-2.5 rounded-lg border border-slate-200 text-xs leading-relaxed max-h-36 overflow-y-auto select-all"></div>
                         <button onclick="copyPolishOutput()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 font-bold py-1 rounded-lg text-[10px] transition-colors flex items-center justify-center gap-1">
-                            <i class="fa-solid fa-copy"></i> Copiar Mensagem Polida
+                            <i class="fa-solid fa-copy"></i> Copiar
                         </button>
                     </div>
                 </div>
-            </div>
-
-            <div class="bg-indigo-50 border border-indigo-100 p-4 rounded-xl space-y-2">
-                <h4 class="text-xs font-bold text-indigo-800 flex items-center gap-1.5">
-                    <i class="fa-solid fa-lightbulb"></i>
-                    Padrão Erikinha de Voz
-                </h4>
-                <ul class="text-[10px] text-indigo-700/90 list-disc pl-4 space-y-1.5">
-                    <li>Sempre valide a preocupação do cliente antes de dar a instrução.</li>
-                    <li>Utilize listas ordenadas para cliques sequenciais.</li>
-                    <li>Feche com expressões empáticas (ex: "Qualquer dúvida, conte comigo! 💜").</li>
-                </ul>
             </div>
         </aside>
     </main>
@@ -261,11 +171,9 @@
             </div>
 
             <div class="flex items-center justify-end gap-2.5">
-                <button onclick="closeIaOutputModal()" class="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-700 transition-colors">
-                    Fechar
-                </button>
+                <button onclick="closeIaOutputModal()" class="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-700 transition-colors">Fechar</button>
                 <button onclick="copyModalText()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 py-2 rounded-xl text-xs transition-all shadow-md flex items-center gap-1.5">
-                    <i class="fa-solid fa-copy"></i> Copiar Rascunho
+                    <i class="fa-solid fa-copy"></i> Copiar Texto
                 </button>
             </div>
         </div>
@@ -274,54 +182,45 @@
     <script>
         const chatMemoryStore = {};
         
+        // Base de Backup Local
         const safetyBackupKnowledge = [
             {
                 keywords: ["noa", "notes", "anotador", "ia", "resumo", "resumos", "transcrever"],
                 topic: "Configurar NOA Notes",
-                title: "Como ativar, configurar e usar o NOA Notes no prontuário",
-                url: "https://ajuda.feegow.com/support/solutions/articles/67000743976-como-ativar-configurar-e-usar-o-noa-notes-no-prontu%C3%A1rio",
-                content: `1. **Ativar os Assentos:** Vá em **Configuração > Outras configurações**. Clique em **Gerenciar** e em **Adicionar Assentos** para designar quais profissionais terão o NOA ativo.\n2. **Permissão de Visualização:** O profissional de saúde deve possuir a permissão "Visualizar Resumos de IA" ativa no seu perfil.\n3. **Uso no Prontuário:** Ao abrir o atendimento, clique no ícone do NOA no canto inferior direito para iniciar o anotador por áudio.`
+                title: "Ativar NOA Notes",
+                content: `1. **Ativar os Assentos:** Vá em **Configuração > Outras configurações**. Clique em **Gerenciar** e em **Adicionar Assentos**.\n2. **Permissão de Visualização:** O profissional deve possuir "Visualizar Resumos de IA" ativa no perfil.`
             },
             {
                 keywords: ["sms", "mensagem", "final de semana", "sábado", "domingo", "72h", "lembrete"],
-                topic: "SMS de Lembrete de Final de Semana",
-                title: "O que fazer quando o envio de e-mail/SMS não é enviado no final de semana?",
-                url: "https://ajuda.feegow.com/support/solutions/articles/67000665594-o-que-fazer-quando-o-envio-de-e-mail-sms-n%C3%A3o-%C3%A9-enviado-no-final-de-semana-",
-                content: `1. Acesse o menu **Configurações > Eventos de e-mail/SMS**.\n2. Edite o evento de lembrete de consultas.\n3. Se o evento estiver configurado com antecedência de **72h**, as consultas marcadas para segunda-feira serão disparadas na **sexta-feira**, evitando envios nos sábados e domingos.`
+                topic: "SMS Final de Semana",
+                title: "Eventos de SMS",
+                content: `1. Acesse **Configurações > Eventos de e-mail/SMS**.\n2. Edite o evento de lembrete.\n3. Se configurado com antecedência de **72h**, as consultas de segunda serão disparadas na **sexta-feira**.`
             },
             {
                 keywords: ["guia", "tiss", "regime", "atendimento", "sadt"],
                 topic: "Padrão TISS - Regime de Atendimento",
-                title: "Adequações ao Padrão TISS - Regime de Atendimento",
-                url: "https://ajuda.feegow.com/support/solutions/articles/67000715357-vers%C3%A3o-04-01-00-tiss-adequac%C3%B5es-ao-padr%C3%A3o-tiss-set-2022",
-                content: `No preenchimento de guias SADT sob o padrão TISS, foi adicionado o preenchimento obrigatório do campo **Regime de Atendimento** (Ambulatorial, Domiciliar, Internação, Pronto-Socorro ou Telessaúde) para evitar glosas financeiras junto aos convênios.`
+                title: "Adequações SADT",
+                content: `No preenchimento de guias SADT sob o padrão TISS, é obrigatório preencher o campo **Regime de Atendimento** (Ambulatorial, Domiciliar, Internação, Pronto-Socorro ou Telessaúde).`
             }
         ];
 
         function notifyUser(message, type = "error") {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
-            toast.className = `flex items-center gap-2.5 p-4 mb-2 text-xs font-semibold rounded-xl shadow-xl transition-all duration-300 transform translate-y-0 opacity-100 max-w-sm pointer-events-auto ${
-                type === 'success' ? 'bg-emerald-500 text-white' : 'bg-[#1B2734] text-white border-l-4 border-rose-500'
-            }`;
-            
-            toast.innerHTML = `
-                <i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-triangle-exclamation'} text-sm"></i>
-                <div class="flex-1">${message}</div>
-            `;
+            toast.className = `flex items-center gap-2.5 p-4 mb-2 text-xs font-semibold rounded-xl shadow-xl transition-all duration-300 transform translate-y-0 opacity-100 max-w-sm pointer-events-auto ${type === 'success' ? 'bg-emerald-500 text-white' : 'bg-[#1B2734] text-white border-l-4 border-rose-500'}`;
+            toast.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-triangle-exclamation'} text-sm"></i><div class="flex-1">${message}</div>`;
             container.appendChild(toast);
-            
             setTimeout(() => {
                 toast.classList.replace('opacity-100', 'opacity-0');
                 toast.classList.add('translate-y-2');
                 setTimeout(() => toast.remove(), 300);
-            }, 6000); 
+            }, 5000); 
         }
 
         async function fetchGeminiGroundedResponse(userQuery) {
-            // Garante uso de URL absoluta em ambientes de preview ou local
             let apiUrl = 'https://erikiafeegow.vercel.app/api/chat';
-            if (window.location.hostname === 'erikiafeegow.vercel.app') {
+            // Fallback elegante para ambiente local/preview sem gerar blobs quebrados
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.includes('vercel.app')) {
                 apiUrl = '/api/chat'; 
             }
 
@@ -332,30 +231,17 @@
                     body: JSON.stringify({ query: userQuery })
                 });
 
-                // NOVO TRATAMENTO DE STREAM: Lê uma única vez
                 if (!response.ok) {
                     const errorText = await response.text(); 
-                    console.error("Erro da Vercel/API:", errorText);
-                    notifyUser(`Falha de Servidor: Erro ao processar a resposta na API do Google. Aperte F12 para inspecionar.`, "error");
+                    console.error("Vercel Rejeitou a Requisição:", errorText);
                     return { status: "fallback" };
                 }
 
                 const data = await response.json();
-                
-                if (data.text) {
-                    return { 
-                        status: "success", 
-                        text: data.text, 
-                        citations: data.citations || [] 
-                    };
-                }
-
-                notifyUser("Ocorreu um erro no processamento da resposta pela inteligência artificial.", "error");
+                if (data.text) return { status: "success", text: data.text };
                 return { status: "empty" };
-
             } catch (err) {
-                console.error("Erro fatal de conexão/CORS no Frontend:", err.message);
-                notifyUser("O sistema local não conseguiu se conectar à Vercel. Verifique F12.", "error");
+                console.error("Erro de Rede Fetch:", err);
                 return { status: "fallback" };
             }
         }
@@ -369,12 +255,11 @@
                 <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-[#00b39b] to-[#00d1b5] text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-md">E</div>
                 <div class="bg-white border border-slate-200 rounded-2xl rounded-tl-none p-3 shadow-xs text-sm flex items-center gap-1.5 text-slate-400">
                     <span class="font-bold text-xs text-[#00b39b] mr-1">ErikIA</span>
-                    <span class="text-xs text-slate-500 font-medium">consultando a Central de Ajuda</span>
+                    <span class="text-xs text-slate-500 font-medium">digitando...</span>
                     <span class="h-1.5 w-1.5 bg-[#00b39b] rounded-full animate-bounce" style="animation-delay: 0ms"></span>
                     <span class="h-1.5 w-1.5 bg-[#00b39b] rounded-full animate-bounce" style="animation-delay: 150ms"></span>
                     <span class="h-1.5 w-1.5 bg-[#00b39b] rounded-full animate-bounce" style="animation-delay: 300ms"></span>
-                </div>
-            `;
+                </div>`;
             container.appendChild(indicator);
             container.scrollTop = container.scrollHeight;
         }
@@ -389,15 +274,8 @@
             const wrapper = document.createElement('div');
             wrapper.className = `flex items-start gap-3 ${isUser ? 'justify-end' : ''}`;
 
-            let avatarBlock = '';
-            if (!isUser) {
-                avatarBlock = `<div class="w-8 h-8 rounded-full bg-gradient-to-tr from-[#00b39b] to-[#00d1b5] text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-md">E</div>`;
-            }
-
-            const bubbleTheme = isUser
-                ? 'bg-[#00b39b] text-white rounded-2xl rounded-tr-none p-4 max-w-[80%] shadow-md text-sm font-medium'
-                : 'bg-white border border-slate-200 rounded-2xl rounded-tl-none p-4.5 max-w-[80%] shadow-md text-sm text-[#1b2734]';
-
+            let avatarBlock = !isUser ? `<div class="w-8 h-8 rounded-full bg-gradient-to-tr from-[#00b39b] to-[#00d1b5] text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-md">E</div>` : '';
+            const bubbleTheme = isUser ? 'bg-[#00b39b] text-white rounded-2xl rounded-tr-none p-4 max-w-[80%] shadow-md text-sm font-medium' : 'bg-white border border-slate-200 rounded-2xl rounded-tl-none p-4.5 max-w-[80%] shadow-md text-sm text-[#1b2734]';
             const nameLabel = isUser ? 'Você' : 'ErikIA';
             const labelColor = isUser ? 'text-[#e6fffc]' : 'text-[#00b39b]';
 
@@ -409,438 +287,121 @@
             }
 
             const uniqueId = feedBackOptions ? feedBackOptions.id : 'msg-' + Date.now();
-
             let feedbackPanel = '';
             if (feedBackOptions) {
                 feedbackPanel = `
                     <div class="mt-4 pt-3 border-t border-slate-100 flex flex-col gap-2">
                         <span class="text-xs font-bold text-slate-500">${feedBackOptions.promptQuestion}</span>
-                        <div class="flex flex-wrap items-center justify-between gap-2">
-                            <div class="flex gap-2" id="vote-section-${feedBackOptions.id}">
-                                <button onclick="registerSupportVote('${feedBackOptions.id}', '${feedBackOptions.topicSummary}', 'Sim')" 
-                                        class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold px-4 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5 shadow-xs">
-                                    <i class="fa-solid fa-thumbs-up"></i> Sim, resolveu!
-                                </button>
-                                <button onclick="registerSupportVote('${feedBackOptions.id}', '${feedBackOptions.topicSummary}', 'Não')" 
-                                        class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold px-4 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5 shadow-xs">
-                                    <i class="fa-solid fa-thumbs-down"></i> Não ajudou
-                                </button>
-                            </div>
-                            <div class="flex gap-1.5">
-                                <button onclick="generateAssistantAction('${uniqueId}', 'draft_email')" 
-                                        class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold px-3 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5" title="Gerar e-mail de resposta de suporte pronto para o cliente">
-                                    <i class="fa-solid fa-envelope"></i> Gerar E-mail
-                                </button>
-                                <button onclick="generateAssistantAction('${uniqueId}', 'summarize')" 
-                                        class="bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 font-bold px-3 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5" title="Resumir caso em formato de ticket de closure">
-                                    <i class="fa-solid fa-file-invoice"></i> Resumir
-                                </button>
-                                <button onclick="copyToClipboard('${uniqueId}')" id="copy-action-btn-${uniqueId}" 
-                                        class="bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 font-bold px-4 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5">
-                                    <i class="fa-solid fa-copy"></i> Copiar Texto
-                                </button>
-                            </div>
+                        <div class="flex gap-1.5">
+                            <button onclick="generateAssistantAction('${uniqueId}', 'draft_email')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold px-3 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5" title="Gerar e-mail de resposta"><i class="fa-solid fa-envelope"></i> E-mail</button>
+                            <button onclick="generateAssistantAction('${uniqueId}', 'summarize')" class="bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 font-bold px-3 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5" title="Resumir caso"><i class="fa-solid fa-file-invoice"></i> Resumir</button>
+                            <button onclick="copyToClipboard('${uniqueId}')" id="copy-btn-${uniqueId}" class="bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 font-bold px-3 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5"><i class="fa-solid fa-copy"></i> Copiar</button>
                         </div>
-                    </div>
-                `;
+                    </div>`;
             }
 
             wrapper.innerHTML = `
-                ${!isUser ? avatarBlock : ''}
+                ${avatarBlock}
                 <div class="${bubbleTheme}">
                     <span class="block text-[10px] font-bold uppercase tracking-wider mb-1.5 ${labelColor}">${nameLabel}</span>
                     <div id="content-body-${uniqueId}" class="prose-response leading-relaxed font-normal">${bodyHTML}</div>
                     ${feedbackPanel}
-                </div>
-            `;
-
+                </div>`;
             container.appendChild(wrapper);
             container.scrollTop = container.scrollHeight;
         }
 
         function copyToClipboard(msgId) {
-            const element = document.getElementById(`content-body-${msgId}`);
-            if (!element) return;
-            const textToCopy = element.innerText;
-
-            const tempTextArea = document.createElement('textarea');
-            tempTextArea.value = textToCopy;
-            document.body.appendChild(tempTextArea);
-            tempTextArea.select();
-            document.execCommand('copy');
-            document.body.removeChild(tempTextArea);
-
-            notifyUser("Texto copiado para a área de transferência!", "success");
-
-            const copyBtn = document.getElementById(`copy-action-btn-${msgId}`);
-            if (copyBtn) {
-                const originalContent = copyBtn.innerHTML;
-                copyBtn.innerHTML = `<i class="fa-solid fa-check text-emerald-500"></i> Copiado!`;
-                copyBtn.className = "bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold px-4 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5 shadow-xs";
-                
-                setTimeout(() => {
-                    copyBtn.innerHTML = originalContent;
-                    copyBtn.className = "bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 font-bold px-4 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5";
-                }, 2000);
-            }
+            const textToCopy = document.getElementById(`content-body-${msgId}`).innerText;
+            const temp = document.createElement('textarea');
+            temp.value = textToCopy;
+            document.body.appendChild(temp);
+            temp.select(); document.execCommand('copy');
+            document.body.removeChild(temp);
+            notifyUser("Texto copiado!", "success");
+            const btn = document.getElementById(`copy-btn-${msgId}`);
+            if(btn) { btn.innerHTML = '<i class="fa-solid fa-check"></i>'; setTimeout(() => btn.innerHTML = '<i class="fa-solid fa-copy"></i> Copiar', 2000); }
         }
 
         async function submitUserQuery() {
             const inputField = document.getElementById('chat-input-field');
             const queryText = inputField.value.trim();
             if (!queryText) return;
-
             inputField.value = '';
+
             printChatMessage('Você', queryText, true);
             showLoadingDotAnimation();
 
-            const lowerQuery = queryText.toLowerCase().replace(/[?.,!]/g, "").trim();
-            const greetings = ["oi", "olá", "ola", "bom dia", "boa tarde", "boa noite", "tudo bem", "tudo bom"];
-            if (greetings.includes(lowerQuery)) {
-                setTimeout(() => {
-                    removeLoadingDotAnimation();
-                    printChatMessage('ErikIA', "Olá! Tudo ótimo por aqui. Qual dúvida, módulo ou configuração técnica do Feegow nós vamos analisar hoje? 💜");
-                }, 800);
-                return;
-            }
-
-            const cleanText = queryText.replace(/[^\w\s]/g, '');
-            const topicSummary = cleanText.split(' ').slice(0, 5).join(' ');
-
             const responseData = await fetchGeminiGroundedResponse(queryText);
             removeLoadingDotAnimation();
-
             const messageUniqueId = 'fb-' + Date.now();
 
             if (responseData.status === "success") {
-                let answerMarkdown = responseData.text;
-
-                if (responseData.citations && responseData.citations.length > 0) {
-                    answerMarkdown += "\n\n📚 **Artigos de Referência Encontrados:**\n";
-                    responseData.citations.slice(0, 3).forEach(src => {
-                        answerMarkdown += `* [${src.title}](${src.uri})\n`;
-                    });
-                }
-
-                chatMemoryStore[messageUniqueId] = {
-                    query: queryText,
-                    answer: responseData.text
-                };
-
-                printChatMessage('ErikIA', answerMarkdown, false, {
-                    id: messageUniqueId,
-                    topicSummary: topicSummary,
-                    promptQuestion: "Esse artigo ajudou você a resolver o caso?"
-                }, true);
-
+                chatMemoryStore[messageUniqueId] = { query: queryText, answer: responseData.text };
+                printChatMessage('ErikIA', responseData.text, false, { id: messageUniqueId, promptQuestion: "Ações de Fechamento:" }, true);
             } else {
+                // FALLBACK Inteligente
                 let backupMatch = null;
+                const lowerQ = queryText.toLowerCase();
                 for (let doc of safetyBackupKnowledge) {
-                    const matched = doc.keywords.some(kw => lowerQuery.includes(kw));
-                    if (matched) {
-                        backupMatch = doc;
-                        break;
-                    }
+                    if (doc.keywords.some(kw => lowerQ.includes(kw))) { backupMatch = doc; break; }
                 }
 
                 if (backupMatch) {
-                    const backupMarkdown = `Oi! Vamos analisar isso juntos. 💜 *(Mecanismo de Segurança Local Ativo)*\n\nAqui está o procedimento oficial extraído da nossa base para **${backupMatch.topic}**:\n\n${backupMatch.content}\n\n📚 *Fonte Oficial:* [${backupMatch.title}](${backupMatch.url})`;
-
-                    chatMemoryStore[messageUniqueId] = {
-                        query: queryText,
-                        answer: backupMatch.content
-                    };
-
-                    printChatMessage('ErikIA', backupMarkdown, false, {
-                        id: messageUniqueId,
-                        topicSummary: backupMatch.topic,
-                        promptQuestion: "Esse artigo ajudou você a resolver o caso?"
-                    }, true);
-
+                    const bk = `Oi! *(Backup Ativo)*\nAqui está o procedimento oficial: **${backupMatch.topic}**\n\n${backupMatch.content}`;
+                    chatMemoryStore[messageUniqueId] = { query: queryText, answer: backupMatch.content };
+                    printChatMessage('ErikIA', bk, false, { id: messageUniqueId, promptQuestion: "Ações de Fechamento:" }, true);
                 } else {
-                    const notFoundMarkdown = `Olá. Consultei o acervo técnico do Feegow mas não localizei artigos oficiais para essa dúvida específica.\n\nPor favor, **gostaria de falar com o nosso time de suporte ou abrir um chamado?** Você pode clicar no botão de "Ajuda" (ícone de interrogação) no menu superior do seu Feegow para ser atendido pelo nosso time técnico de Customer Care!`;
-                    printChatMessage('ErikIA', notFoundMarkdown, false);
+                    printChatMessage('ErikIA', "Olá! Não localizei essa informação específica. Recomendamos validar o procedimento no portal oficial Ajuda Feegow.", false);
                 }
             }
         }
 
-        function analyzeCategoryByContent(query, answer) {
-            const corpus = (query + " " + answer).toLowerCase();
-            if (corpus.includes("noa") || corpus.includes("notes") || corpus.includes("anotador") || corpus.includes("resumo") || corpus.includes("ia") || corpus.includes("atestado")) return "Prontuário";
-            if (corpus.includes("guia") || corpus.includes("tiss") || corpus.includes("sadt") || corpus.includes("faturamento") || corpus.includes("convênio") || corpus.includes("xml")) return "Faturamento";
-            if (corpus.includes("configurar") || corpus.includes("configuração") || corpus.includes("parâmetro") || corpus.includes("permissão") || corpus.includes("ativar")) return "Configurações";
-            if (corpus.includes("agenda") || corpus.includes("agendamento") || corpus.includes("médico") || corpus.includes("sms") || corpus.includes("lembrete")) return "Agenda";
-            if (corpus.includes("pagamento") || corpus.includes("financeiro") || corpus.includes("caixa") || corpus.includes("saldo") || corpus.includes("conta")) return "Financeiro";
-            if (corpus.includes("cadastro") || corpus.includes("funcionário") || corpus.includes("profissional") || corpus.includes("paciente") || corpus.includes("perfil")) return "Cadastros";
-            return "Outros";
-        }
-
-        async function registerSupportVote(id, topicSummary, voteValue) {
-            const container = document.getElementById(`vote-section-${id}`);
-            if (!container) return;
-
-            const interaction = chatMemoryStore[id] || { query: "Dúvida Geral", answer: "" };
-            const finalCategory = analyzeCategoryByContent(interaction.query, interaction.answer);
-            const formattedDate = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
-
-            const payload = {
-                "data_uso": formattedDate,
-                "nome_agente": "Andre Mano",
-                "topico_duvida": topicSummary,
-                "categoria": finalCategory,
-                "ajuda_efetiva": voteValue,
-                "gid": "526365502"
-            };
-
-            const brandColor = voteValue === 'Sim' ? 'text-emerald-500' : 'text-rose-500';
-            const iconSymbol = voteValue === 'Sim' ? 'fa-circle-check' : 'fa-circle-xmark';
-
-            container.innerHTML = `
-                <span class="text-xs font-bold ${brandColor} flex items-center gap-1.5 animate-pulse">
-                    <i class="fa-solid ${iconSymbol}"></i> Sincronizando com a planilha...
-                </span>
-            `;
-
-            const appsScriptWebhookUrl = "https://script.google.com/macros/s/AKfycbwB5Y5Yp0dPo_IcJHaSoIf0xhRjzM3DTFUNJ0XvsDe68hQ0Am7lXCqvJftIMlNKC8_2/exec";
-
-            try {
-                await fetch(appsScriptWebhookUrl, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                notifyUser("Dados enviados com sucesso para a planilha do time!", "success");
-                
-                container.innerHTML = `
-                    <span class="text-xs font-bold ${brandColor} flex items-center gap-1.5">
-                        <i class="fa-solid ${iconSymbol}"></i> Obrigado pelo seu feedback! 💜
-                    </span>
-                `;
-            } catch (err) {
-                console.error("Erro ao enviar dados para a planilha remota:", err);
-                notifyUser("Falha na sincronização de rede. Gravado apenas localmente.");
-            }
-        }
-
-        function handleUserSignOut() {
-            notifyUser("Sessão corporativa encerrada!");
-            document.getElementById('user-info-box').innerHTML = `
-                <span class="text-xs font-bold text-rose-500">Sessão Encerrada</span>
-            `;
-            document.getElementById('log-connected-user').innerText = "Nenhum usuário conectado.";
-        }
-
-        // --- SISTEMA DE DIAGNÓSTICO EM TRILHA (INDEX -> VERCEL -> GEMINI) ---
-        async function runSystemDiagnostics() {
-            const elUi = document.getElementById('diag-ui');
-            const elVercel = document.getElementById('diag-vercel');
-            const elGemini = document.getElementById('diag-gemini');
-
-            if (!navigator.onLine) {
-                elVercel.className = "flex items-center gap-1.5 px-2 py-1 rounded-lg bg-rose-100 text-rose-700 shadow-xs";
-                elVercel.innerHTML = '<i class="fa-solid fa-wifi"></i> Sem Rede';
-                return;
-            }
-
-            // 1. Status da Interface (Sempre OK se o JS rodar)
-            elUi.className = "flex items-center gap-1.5 px-2 py-1 rounded-lg bg-emerald-100 text-emerald-700 shadow-xs";
-            elUi.innerHTML = '<i class="fa-solid fa-check"></i> Index';
-
-            let apiUrl = 'https://erikiafeegow.vercel.app/api/chat';
-            if (window.location.hostname === 'erikiafeegow.vercel.app') {
-                apiUrl = '/api/chat'; 
-            }
-
-            // 2. Teste da Vercel (Dispara um OPTIONS para checar CORS e a Rota)
-            elVercel.className = "flex items-center gap-1.5 px-2 py-1 rounded-lg bg-amber-100 text-amber-700 shadow-xs";
-            elVercel.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> API';
-            
-            try {
-                const vercelRes = await fetch(apiUrl, { method: 'OPTIONS' });
-                if (vercelRes.ok) {
-                    elVercel.className = "flex items-center gap-1.5 px-2 py-1 rounded-lg bg-emerald-100 text-emerald-700 shadow-xs";
-                    elVercel.innerHTML = '<i class="fa-solid fa-check"></i> Vercel OK';
-                } else {
-                    throw new Error(`Erro HTTP: ${vercelRes.status}`);
-                }
-            } catch (err) {
-                elVercel.className = "flex items-center gap-1.5 px-2 py-1 rounded-lg bg-rose-100 text-rose-700 shadow-xs cursor-pointer";
-                elVercel.innerHTML = '<i class="fa-solid fa-xmark"></i> Vercel Falhou';
-                elVercel.title = `Erro na Rota: ${err.message}`;
-                
-                elGemini.className = "flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-200 text-slate-400 shadow-xs";
-                elGemini.innerHTML = '<i class="fa-solid fa-ban"></i> Abortado';
-                console.error("Diagnóstico: Falha ao alcançar /api/chat na Vercel.", err);
-                return; // Se a Vercel falhou, nem tenta o Gemini
-            }
-
-            // 3. Teste da API do Gemini (Dispara um microping usando a action 'polish')
-            elGemini.className = "flex items-center gap-1.5 px-2 py-1 rounded-lg bg-indigo-100 text-indigo-700 shadow-xs";
-            elGemini.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Gemini';
-
-            try {
-                const geminiRes = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ query: 'ping', action: 'polish', context: 'teste' })
-                });
-
-                if (geminiRes.ok) {
-                    const data = await geminiRes.json();
-                    if (data.text) {
-                        elGemini.className = "flex items-center gap-1.5 px-2 py-1 rounded-lg bg-emerald-100 text-emerald-700 shadow-xs";
-                        elGemini.innerHTML = '<i class="fa-solid fa-check-double"></i> Gemini OK';
-                    } else {
-                        throw new Error("Resposta sem texto válido");
-                    }
-                } else {
-                    const errText = await geminiRes.text();
-                    throw new Error(errText);
-                }
-            } catch (err) {
-                elGemini.className = "flex items-center gap-1.5 px-2 py-1 rounded-lg bg-rose-100 text-rose-700 shadow-xs cursor-help";
-                elGemini.innerHTML = '<i class="fa-solid fa-xmark"></i> API Falhou';
-                elGemini.title = "Erro ao conectar com Google Gemini. Aperte F12 para inspecionar o log.";
-                console.error("Diagnóstico: A Vercel respondeu, mas a API do Gemini rejeitou a requisição.", err);
-            }
-        }
-
-        window.addEventListener('load', () => {
-            runSystemDiagnostics();
-            // REMOVIDO: setInterval(runSystemDiagnostics, 120000); para poupar a cota gratuita do Google
-        });
-        window.addEventListener('online', runSystemDiagnostics);
-
-        function toggleIaToolbox() {
-            const panel = document.getElementById('ia-toolbox-panel');
-            panel.classList.toggle('hidden');
-            panel.classList.toggle('flex');
+        function handleUserSignOut() { notifyUser("Sessão encerrada!"); }
+        function toggleIaToolbox() { document.getElementById('ia-toolbox-panel').classList.toggle('hidden'); document.getElementById('ia-toolbox-panel').classList.toggle('flex'); }
+        function closeIaOutputModal() { document.getElementById('ia-output-modal').classList.add('hidden'); }
+        function copyModalText() {
+            const temp = document.createElement('textarea');
+            temp.value = document.getElementById('ia-modal-textarea').value;
+            document.body.appendChild(temp); temp.select(); document.execCommand('copy'); document.body.removeChild(temp);
+            notifyUser("Rascunho copiado!", "success");
         }
 
         async function callIaPolisher() {
             const draftText = document.getElementById('polish-input').value.trim();
             const toneValue = document.getElementById('polish-tone').value;
-            const outputContainer = document.getElementById('polish-output-container');
-            const outputDiv = document.getElementById('polish-output');
+            if (!draftText) return notifyUser("Digite um rascunho!");
 
-            if (!draftText) {
-                notifyUser("Por favor, digite um rascunho para polir!");
-                return;
-            }
-
-            outputContainer.classList.remove('hidden');
-            outputDiv.innerHTML = `<span class="text-slate-400 italic flex items-center gap-1.5"><i class="fa-solid fa-circle-notch animate-spin"></i> Polindo texto com o Gemini...</span>`;
+            const outDiv = document.getElementById('polish-output');
+            document.getElementById('polish-output-container').classList.remove('hidden');
+            outDiv.innerHTML = `<span class="text-slate-400 italic">Polindo...</span>`;
 
             let apiUrl = 'https://erikiafeegow.vercel.app/api/chat';
-            if (window.location.hostname === 'erikiafeegow.vercel.app') { apiUrl = '/api/chat'; }
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') apiUrl = '/api/chat';
 
             try {
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        query: draftText,
-                        context: toneValue,
-                        action: 'polish'
-                    })
-                });
-
-                if (!response.ok) {
-                    notifyUser(`Erro da Vercel no Polidor: ${response.status}. Aperte F12 para inspecionar.`, "error");
-                    throw new Error("Erro na requisição.");
-                }
-                const data = await response.json();
-
-                if (data.text) {
-                    outputDiv.innerText = data.text;
-                } else {
-                    outputDiv.innerText = "Falha ao processar rascunho.";
-                }
-            } catch (err) {
-                console.error(err);
-                outputDiv.innerText = "Falha ao conectar com o serviço de IA.";
-            }
+                const res = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query: draftText, context: toneValue, action: 'polish' }) });
+                const data = await res.json();
+                outDiv.innerText = data.text || "Falha.";
+            } catch (e) { outDiv.innerText = "Erro de rede."; }
         }
 
-        function copyPolishOutput() {
-            const text = document.getElementById('polish-output').innerText;
-            if (!text || text.includes("Polindo texto")) return;
-
-            const tempTextArea = document.createElement('textarea');
-            tempTextArea.value = text;
-            document.body.appendChild(tempTextArea);
-            tempTextArea.select();
-            document.execCommand('copy');
-            document.body.removeChild(tempTextArea);
-
-            notifyUser("Mensagem polida copiada com sucesso!", "success");
-        }
-
-        function openIaOutputModal(title, content) {
-            document.getElementById('ia-modal-title').innerText = title;
-            document.getElementById('ia-modal-textarea').value = content;
-            const modal = document.getElementById('ia-output-modal');
-            modal.classList.remove('hidden');
-        }
-
-        function closeIaOutputModal() {
-            document.getElementById('ia-output-modal').classList.add('hidden');
-        }
-
-        function copyModalText() {
-            const text = document.getElementById('ia-modal-textarea').value;
-            if (!text) return;
-
-            const tempTextArea = document.createElement('textarea');
-            tempTextArea.value = text;
-            document.body.appendChild(tempTextArea);
-            tempTextArea.select();
-            document.execCommand('copy');
-            document.body.removeChild(tempTextArea);
-
-            notifyUser("Rascunho copiado com sucesso!", "success");
-        }
-
-        async function generateAssistantAction(messageUniqueId, actionType) {
-            const memory = chatMemoryStore[messageUniqueId];
-            if (!memory) {
-                notifyUser("Dados da conversa não localizados na memória.");
-                return;
-            }
-
-            const title = actionType === 'draft_email' ? '📧 Rascunho de E-mail de Suporte' : '📋 Sumário Interno do Ticket';
-            openIaOutputModal(title, "Processando solicitação com o Gemini, por favor aguarde...");
+        async function generateAssistantAction(messageId, actionType) {
+            const memory = chatMemoryStore[messageId];
+            if (!memory) return notifyUser("Dados não localizados.");
+            
+            document.getElementById('ia-modal-title').innerText = actionType === 'draft_email' ? '📧 E-mail' : '📋 Resumo';
+            document.getElementById('ia-modal-textarea').value = "Processando...";
+            document.getElementById('ia-output-modal').classList.remove('hidden');
 
             let apiUrl = 'https://erikiafeegow.vercel.app/api/chat';
-            if (window.location.hostname === 'erikiafeegow.vercel.app') { apiUrl = '/api/chat'; }
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') apiUrl = '/api/chat';
 
             try {
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        query: memory.query,
-                        context: memory.answer,
-                        action: actionType
-                    })
-                });
-
-                if (!response.ok) {
-                    notifyUser(`Erro da Vercel: ${response.status}. Aperte F12 para inspecionar.`, "error");
-                    throw new Error("Erro de comunicação com a API.");
-                }
-                const data = await response.json();
-
-                if (data.text) {
-                    document.getElementById('ia-modal-textarea').value = data.text;
-                } else {
-                    document.getElementById('ia-modal-textarea').value = "Falha ao estruturar os dados com a IA.";
-                }
-            } catch (err) {
-                console.error(err);
-                document.getElementById('ia-modal-textarea').value = "Ocorreu um erro ao conectar-se ao servidor de proxy. Verifique o console (F12).";
-            }
+                const res = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query: memory.query, context: memory.answer, action: actionType }) });
+                const data = await res.json();
+                document.getElementById('ia-modal-textarea').value = data.text || "Falha.";
+            } catch (e) { document.getElementById('ia-modal-textarea').value = "Erro."; }
         }
     </script>
 </body>
