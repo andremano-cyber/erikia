@@ -319,11 +319,10 @@
         }
 
         async function fetchGeminiGroundedResponse(userQuery) {
-            // Se estiver rodando localmente (file://), aponta para a Vercel
-            // Se estiver hospedado, usa o caminho relativo
-            let apiUrl = `/api/chat`;
-            if (window.location.protocol === 'file:') {
-                apiUrl = `https://erikiafeegow.vercel.app/api/chat`; 
+            // Garante uso de URL absoluta em ambientes de preview ou local
+            let apiUrl = 'https://erikiafeegow.vercel.app/api/chat';
+            if (window.location.hostname === 'erikiafeegow.vercel.app') {
+                apiUrl = '/api/chat'; 
             }
 
             try {
@@ -648,9 +647,9 @@
             elUi.className = "flex items-center gap-1.5 px-2 py-1 rounded-lg bg-emerald-100 text-emerald-700 shadow-xs";
             elUi.innerHTML = '<i class="fa-solid fa-check"></i> Index';
 
-            let apiUrl = `/api/chat`;
-            if (window.location.protocol === 'file:') {
-                apiUrl = `https://erikiafeegow.vercel.app/api/chat`; 
+            let apiUrl = 'https://erikiafeegow.vercel.app/api/chat';
+            if (window.location.hostname === 'erikiafeegow.vercel.app') {
+                apiUrl = '/api/chat'; 
             }
 
             // 2. Teste da Vercel (Dispara um OPTIONS para checar CORS e a Rota)
@@ -709,8 +708,7 @@
 
         window.addEventListener('load', () => {
             runSystemDiagnostics();
-            // Refaz o teste a cada 2 minutos
-            setInterval(runSystemDiagnostics, 120000); 
+            // REMOVIDO: setInterval(runSystemDiagnostics, 120000); para poupar a cota gratuita do Google
         });
         window.addEventListener('online', runSystemDiagnostics);
 
@@ -734,8 +732,8 @@
             outputContainer.classList.remove('hidden');
             outputDiv.innerHTML = `<span class="text-slate-400 italic flex items-center gap-1.5"><i class="fa-solid fa-circle-notch animate-spin"></i> Polindo texto com o Gemini...</span>`;
 
-            let apiUrl = `/api/chat`;
-            if (window.location.protocol === 'file:') { apiUrl = `https://erikiafeegow.vercel.app/api/chat`; }
+            let apiUrl = 'https://erikiafeegow.vercel.app/api/chat';
+            if (window.location.hostname === 'erikiafeegow.vercel.app') { apiUrl = '/api/chat'; }
 
             try {
                 const response = await fetch(apiUrl, {
@@ -814,8 +812,8 @@
             const title = actionType === 'draft_email' ? '📧 Rascunho de E-mail de Suporte' : '📋 Sumário Interno do Ticket';
             openIaOutputModal(title, "Processando solicitação com o Gemini, por favor aguarde...");
 
-            let apiUrl = `/api/chat`;
-            if (window.location.protocol === 'file:') { apiUrl = `https://erikiafeegow.vercel.app/api/chat`; }
+            let apiUrl = 'https://erikiafeegow.vercel.app/api/chat';
+            if (window.location.hostname === 'erikiafeegow.vercel.app') { apiUrl = '/api/chat'; }
 
             try {
                 const response = await fetch(apiUrl, {
