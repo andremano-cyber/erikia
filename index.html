@@ -110,6 +110,29 @@
                 <i class="fa-solid fa-right-from-bracket text-xs"></i>
             </button>
         </div>
+
+        <div class="flex items-center gap-2 text-[10px] font-bold">
+            <!-- Index Status -->
+            <span id="diag-ui" class="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-100 text-slate-500 shadow-xs transition-colors">
+                <i class="fa-solid fa-spinner animate-spin"></i> Index
+            </span>
+            <i class="fa-solid fa-chevron-right text-slate-300 text-[8px]"></i>
+            
+            <!-- Vercel Status -->
+            <span id="diag-vercel" class="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-100 text-slate-500 shadow-xs transition-colors">
+                <i class="fa-solid fa-clock"></i> API
+            </span>
+            <i class="fa-solid fa-chevron-right text-slate-300 text-[8px]"></i>
+            
+            <!-- Gemini Status -->
+            <span id="diag-gemini" class="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-100 text-slate-500 shadow-xs transition-colors">
+                <i class="fa-solid fa-clock"></i> Gemini
+            </span>
+            
+            <button onclick="runSystemDiagnostics()" class="ml-1 text-slate-400 hover:text-[#00b39b] transition-colors" title="Recarregar Teste">
+                <i class="fa-solid fa-rotate-right"></i>
+            </button>
+        </div>
     </div>
 </header>
 
@@ -607,6 +630,87 @@
             `;
             document.getElementById('log-connected-user').innerText = "Nenhum usuário conectado.";
         }
+
+        // --- SISTEMA DE DIAGNÓSTICO EM TRILHA (INDEX -> VERCEL -> GEMINI) ---
+        async function runSystemDiagnostics() {
+            const elUi = document.getElementById('diag-ui');
+            const elVercel = document.getElementById('diag-vercel');
+            const elGemini = document.getElementById('diag-gemini');
+
+            if (!navigator.onLine) {
+                elVercel.className = "flex items-center gap-1.5 px-2 py-1 rounded-lg bg-rose-100 text-rose-700 shadow-xs";
+                elVercel.innerHTML = '<i class="fa-solid fa-wifi"></i> Sem Rede';
+                return;
+            }
+
+            // 1. Status da Interface (Sempre OK se o JS rodar)
+            elUi.className = "flex items-center gap-1.5 px-2 py-1 rounded-lg bg-emerald-100 text-emerald-700 shadow-xs";
+            elUi.innerHTML = '<i class="fa-solid fa-check"></i> Index';
+
+            let apiUrl = 'https://erikiafeegow.vercel.app/api/chat';
+            if (window.location.hostname === 'erikiafeegow.vercel.app') {
+                apiUrl = '/api/chat'; 
+            }
+
+            // 2. Teste da Vercel (Dispara um OPTIONS para checar CORS e a Rota)
+            elVercel.className = "flex items-center gap-1.5 px-2 py-1 rounded-lg bg-amber-100 text-amber-700 shadow-xs";
+            elVercel.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> API';
+            
+            try {
+                const vercelRes = await fetch(apiUrl, { method: 'OPTIONS' });
+                if (vercelRes.ok) {
+                    elVercel.className = "flex items-center gap-1.5 px-2 py-1 rounded-lg bg-emerald-100 text-emerald-700 shadow-xs";
+                    elVercel.innerHTML = '<i class="fa-solid fa-check"></i> Vercel OK';
+                } else {
+                    throw new Error(`Erro HTTP: ${vercelRes.status}`);
+                }
+            } catch (err) {
+                elVercel.className = "flex items-center gap-1.5 px-2 py-1 rounded-lg bg-rose-100 text-rose-700 shadow-xs cursor-pointer";
+                elVercel.innerHTML = '<i class="fa-solid fa-xmark"></i> Vercel Falhou';
+                elVercel.title = `Erro na Rota: ${err.message}`;
+                
+                elGemini.className = "flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-200 text-slate-400 shadow-xs";
+                elGemini.innerHTML = '<i class="fa-solid fa-ban"></i> Abortado';
+                console.error("Diagnóstico: Falha ao alcançar /api/chat na Vercel.", err);
+                return; // Se a Vercel falhou, nem tenta o Gemini
+            }
+
+            // 3. Teste da API do Gemini (Dispara um microping usando a action 'polish')
+            elGemini.className = "flex items-center gap-1.5 px-2 py-1 rounded-lg bg-indigo-100 text-indigo-700 shadow-xs";
+            elGemini.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Gemini';
+
+            try {
+                const geminiRes = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: 'ping', action: 'polish', context: 'teste' })
+                });
+
+                if (geminiRes.ok) {
+                    const data = await geminiRes.json();
+                    if (data.text) {
+                        elGemini.className = "flex items-center gap-1.5 px-2 py-1 rounded-lg bg-emerald-100 text-emerald-700 shadow-xs";
+                        elGemini.innerHTML = '<i class="fa-solid fa-check-double"></i> Gemini OK';
+                    } else {
+                        throw new Error("Resposta sem texto válido");
+                    }
+                } else {
+                    const errText = await geminiRes.text();
+                    throw new Error(errText);
+                }
+            } catch (err) {
+                elGemini.className = "flex items-center gap-1.5 px-2 py-1 rounded-lg bg-rose-100 text-rose-700 shadow-xs cursor-help";
+                elGemini.innerHTML = '<i class="fa-solid fa-xmark"></i> API Falhou';
+                elGemini.title = "Erro ao conectar com Google Gemini. Aperte F12 para inspecionar o log.";
+                console.error("Diagnóstico: A Vercel respondeu, mas a API do Gemini rejeitou a requisição.", err);
+            }
+        }
+
+        window.addEventListener('load', () => {
+            runSystemDiagnostics();
+            // REMOVIDO: setInterval(runSystemDiagnostics, 120000); para poupar a cota gratuita do Google
+        });
+        window.addEventListener('online', runSystemDiagnostics);
 
         function toggleIaToolbox() {
             const panel = document.getElementById('ia-toolbox-panel');
