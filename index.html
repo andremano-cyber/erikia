@@ -107,25 +107,36 @@
                     <p id="user-display-email" class="text-[9px] text-slate-400 truncate">andre.mano@docplanner.com</p>
                 </div>
                 <button onclick="handleUserSignOut()" class="text-slate-400 hover:text-rose-500 transition-colors p-1" title="Desconectar">
-                    <i class="fa-solid fa-right-from-bracket text-xs"></i>
-                </button>
-            </div>
-
-            <div class="flex flex-col gap-1.5">
-                <span id="connection-status-badge" class="bg-slate-50 text-slate-500 border border-slate-200 text-[10px] px-2 py-0.5 rounded-full font-semibold flex items-center gap-1.5 shadow-xs transition-colors duration-300" title="Verificando conexão com a Central de Ajuda...">
-                    <span id="connection-status-dot" class="h-1.5 w-1.5 rounded-full bg-slate-400 animate-pulse"></span>
-                    <span id="connection-status-text">Central: Conectando...</span>
-                </span>
-                
-                <span id="gemini-status-badge" class="bg-slate-50 text-slate-500 border border-slate-200 text-[10px] px-2 py-0.5 rounded-full font-semibold flex items-center gap-1.5 shadow-xs transition-colors duration-300" title="Verificando disponibilidade do Proxy do Gemini...">
-                    <span id="gemini-status-dot" class="h-1.5 w-1.5 rounded-full bg-slate-400 animate-pulse"></span>
-                    <span id="gemini-status-text">Gemini: Conectando...</span>
-                </span>
-            </div>
+                <i class="fa-solid fa-right-from-bracket text-xs"></i>
+            </button>
         </div>
-    </header>
 
-    <!-- CONTAINER PRINCIPAL DO CHAT -->
+        <div class="flex items-center gap-2 text-[10px] font-bold">
+            <!-- Index Status -->
+            <span id="diag-ui" class="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-100 text-slate-500 shadow-xs transition-colors">
+                <i class="fa-solid fa-spinner animate-spin"></i> Index
+            </span>
+            <i class="fa-solid fa-chevron-right text-slate-300 text-[8px]"></i>
+            
+            <!-- Vercel Status -->
+            <span id="diag-vercel" class="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-100 text-slate-500 shadow-xs transition-colors">
+                <i class="fa-solid fa-clock"></i> API
+            </span>
+            <i class="fa-solid fa-chevron-right text-slate-300 text-[8px]"></i>
+            
+            <!-- Gemini Status -->
+            <span id="diag-gemini" class="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-100 text-slate-500 shadow-xs transition-colors">
+                <i class="fa-solid fa-clock"></i> Gemini
+            </span>
+            
+            <button onclick="runSystemDiagnostics()" class="ml-1 text-slate-400 hover:text-[#00b39b] transition-colors" title="Recarregar Teste">
+                <i class="fa-solid fa-rotate-right"></i>
+            </button>
+        </div>
+    </div>
+</header>
+
+<!-- CONTAINER PRINCIPAL DO CHAT -->
     <main class="flex-1 flex flex-row bg-slate-100 h-full overflow-hidden relative">
         
         <div class="flex-1 flex flex-col h-full overflow-hidden relative">
@@ -621,79 +632,87 @@
             document.getElementById('log-connected-user').innerText = "Nenhum usuário conectado.";
         }
 
-        async function checkHelpCenterStatus() {
-            const badge = document.getElementById('connection-status-badge');
-            const dot = document.getElementById('connection-status-dot');
-            const text = document.getElementById('connection-status-text');
-            if (!badge) return;
+        // --- SISTEMA DE DIAGNÓSTICO EM TRILHA (INDEX -> VERCEL -> GEMINI) ---
+        async function runSystemDiagnostics() {
+            const elUi = document.getElementById('diag-ui');
+            const elVercel = document.getElementById('diag-vercel');
+            const elGemini = document.getElementById('diag-gemini');
 
             if (!navigator.onLine) {
-                setOfflineStatus(badge, dot, text, "Sem Internet");
+                elVercel.className = "flex items-center gap-1.5 px-2 py-1 rounded-lg bg-rose-100 text-rose-700 shadow-xs";
+                elVercel.innerHTML = '<i class="fa-solid fa-wifi"></i> Sem Rede';
                 return;
             }
 
-            try {
-                await fetch('https://ajuda.feegow.com/support/home', { mode: 'no-cors', cache: 'no-store' });
-                badge.className = "bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] px-2 py-0.5 rounded-full font-semibold flex items-center gap-1.5 shadow-xs transition-colors duration-300";
-                dot.className = "h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping";
-                text.innerText = "Central: Online";
-            } catch (error) {
-                setOfflineStatus(badge, dot, text, "Central Indisponível");
-            }
-        }
-
-        function setOfflineStatus(badge, dot, text, message) {
-            badge.className = "bg-rose-50 text-rose-700 border border-rose-200 text-[10px] px-2 py-0.5 rounded-full font-semibold flex items-center gap-1.5 shadow-xs transition-colors duration-300";
-            dot.className = "h-1.5 w-1.5 rounded-full bg-rose-500";
-            text.innerText = message;
-        }
-
-        async function checkGeminiStatus() {
-            const badge = document.getElementById('gemini-status-badge');
-            const dot = document.getElementById('gemini-status-dot');
-            const text = document.getElementById('gemini-status-text');
-            if (!badge) return;
-
-            if (!navigator.onLine) {
-                setOfflineStatus(badge, dot, text, "Gemini: Sem Rede");
-                return;
-            }
+            // 1. Status da Interface (Sempre OK se o JS rodar)
+            elUi.className = "flex items-center gap-1.5 px-2 py-1 rounded-lg bg-emerald-100 text-emerald-700 shadow-xs";
+            elUi.innerHTML = '<i class="fa-solid fa-check"></i> Index';
 
             let apiUrl = `/api/chat`;
             if (window.location.protocol === 'file:') {
                 apiUrl = `https://erikiafeegow.vercel.app/api/chat`; 
             }
 
+            // 2. Teste da Vercel (Dispara um OPTIONS para checar CORS e a Rota)
+            elVercel.className = "flex items-center gap-1.5 px-2 py-1 rounded-lg bg-amber-100 text-amber-700 shadow-xs";
+            elVercel.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> API';
+            
             try {
-                const response = await fetch(apiUrl, { method: 'OPTIONS' });
-                if (response.ok) {
-                    badge.className = "bg-indigo-50 text-indigo-700 border border-indigo-200 text-[10px] px-2 py-0.5 rounded-full font-semibold flex items-center gap-1.5 shadow-xs transition-colors duration-300";
-                    dot.className = "h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse";
-                    text.innerText = "Gemini: Online";
+                const vercelRes = await fetch(apiUrl, { method: 'OPTIONS' });
+                if (vercelRes.ok) {
+                    elVercel.className = "flex items-center gap-1.5 px-2 py-1 rounded-lg bg-emerald-100 text-emerald-700 shadow-xs";
+                    elVercel.innerHTML = '<i class="fa-solid fa-check"></i> Vercel OK';
                 } else {
-                    setOfflineStatus(badge, dot, text, "Gemini: Erro na Vercel");
+                    throw new Error(`Erro HTTP: ${vercelRes.status}`);
                 }
-            } catch (error) {
-                setOfflineStatus(badge, dot, text, "Gemini: Backend Inacessível");
+            } catch (err) {
+                elVercel.className = "flex items-center gap-1.5 px-2 py-1 rounded-lg bg-rose-100 text-rose-700 shadow-xs cursor-pointer";
+                elVercel.innerHTML = '<i class="fa-solid fa-xmark"></i> Vercel Falhou';
+                elVercel.title = `Erro na Rota: ${err.message}`;
+                
+                elGemini.className = "flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-200 text-slate-400 shadow-xs";
+                elGemini.innerHTML = '<i class="fa-solid fa-ban"></i> Abortado';
+                console.error("Diagnóstico: Falha ao alcançar /api/chat na Vercel.", err);
+                return; // Se a Vercel falhou, nem tenta o Gemini
+            }
+
+            // 3. Teste da API do Gemini (Dispara um microping usando a action 'polish')
+            elGemini.className = "flex items-center gap-1.5 px-2 py-1 rounded-lg bg-indigo-100 text-indigo-700 shadow-xs";
+            elGemini.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Gemini';
+
+            try {
+                const geminiRes = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: 'ping', action: 'polish', context: 'teste' })
+                });
+
+                if (geminiRes.ok) {
+                    const data = await geminiRes.json();
+                    if (data.text) {
+                        elGemini.className = "flex items-center gap-1.5 px-2 py-1 rounded-lg bg-emerald-100 text-emerald-700 shadow-xs";
+                        elGemini.innerHTML = '<i class="fa-solid fa-check-double"></i> Gemini OK';
+                    } else {
+                        throw new Error("Resposta sem texto válido");
+                    }
+                } else {
+                    const errText = await geminiRes.text();
+                    throw new Error(errText);
+                }
+            } catch (err) {
+                elGemini.className = "flex items-center gap-1.5 px-2 py-1 rounded-lg bg-rose-100 text-rose-700 shadow-xs cursor-help";
+                elGemini.innerHTML = '<i class="fa-solid fa-xmark"></i> API Falhou';
+                elGemini.title = "Erro ao conectar com Google Gemini. Aperte F12 para inspecionar o log.";
+                console.error("Diagnóstico: A Vercel respondeu, mas a API do Gemini rejeitou a requisição.", err);
             }
         }
 
         window.addEventListener('load', () => {
-            checkHelpCenterStatus();
-            checkGeminiStatus();
-            setInterval(() => {
-                checkHelpCenterStatus();
-                checkGeminiStatus();
-            }, 30000); 
+            runSystemDiagnostics();
+            // Refaz o teste a cada 2 minutos
+            setInterval(runSystemDiagnostics, 120000); 
         });
-        window.addEventListener('offline', () => {
-            checkHelpCenterStatus();
-            checkGeminiStatus();
-        });
-        window.addEventListener('online', () => {
-            checkHelpCenterStatus();
-            checkGeminiStatus();
-        });
+        window.addEventListener('online', runSystemDiagnostics);
 
         function toggleIaToolbox() {
             const panel = document.getElementById('ia-toolbox-panel');
