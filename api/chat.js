@@ -28,8 +28,8 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: 'Chave da API do Gemini ausente no servidor.' });
     }
 
-    // Usando o modelo validado, estável e com suporte ao Google Search para a API v1beta
-    const modelName = "gemini-3-flash-live"; 
+    // Usando o modelo validado da sua lista oficial de permissões (gemini-3.5-flash)
+    const modelName = "gemini-3.5-flash"; 
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`;
 
     let systemInstructions = '';
