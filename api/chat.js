@@ -29,7 +29,7 @@ export default async function handler(req, res) {
     }
 
     // AQUI ESTÁ A CORREÇÃO: Usando o modelo exato da sua lista autorizada!
-    const modelName = "gemini-3.5-flash"; 
+    const modelName = "gemini-3.1-flash-lite"; 
     
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`;
 
