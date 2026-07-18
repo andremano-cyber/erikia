@@ -1,5 +1,5 @@
 export default async function handler(req, res) {
-    // Configuração de CORS para garantir a comunicação com o Frontend
+    // Configurações de CORS para aceitar conexões do seu front-end (index.html)
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
@@ -24,32 +24,38 @@ export default async function handler(req, res) {
 
     const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
     if (!GEMINI_API_KEY) {
-        console.error("ERRO CRÍTICO: GEMINI_API_KEY não configurada na Vercel.");
-        return res.status(500).json({ error: 'Chave da API do Gemini ausente no servidor.' });
+        console.error("ERRO CRÍTICO: GEMINI_API_KEY ausente no servidor Vercel.");
+        return res.status(500).json({ error: 'Chave da API não configurada.' });
     }
 
-    // AQUI ESTÁ A CORREÇÃO: Usando o modelo exato da sua lista autorizada!
+    // Usando o modelo super rápido e leve autorizado na sua chave
     const modelName = "gemini-3.1-flash-lite"; 
-    
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`;
 
     let systemInstructions = '';
     let promptContent = '';
-    let tools = [];
 
     const currentAction = action || 'chat';
 
     if (currentAction === 'chat') {
-        systemInstructions = `Você é a ErikIA, assistente virtual técnica da central de ajuda da Feegow. 
-Sua missão é resolver dúvidas técnicas baseando-se OBRIGATORIAMENTE E UNICAMENTE nas documentações oficiais do domínio ajuda.feegow.com.
-Responda em formato Markdown, traga o passo a passo claro e sempre adicione os links de referência encontrados.
-Se a dúvida não estiver no ajuda.feegow.com, responda informando que não localizou o artigo e peça para contatar o suporte.`;
+        systemInstructions = `Você é a ErikIA, assistente virtual altamente técnica da central de ajuda da Feegow. 
+Sua missão é resolver dúvidas técnicas do software.
+Responda em formato Markdown, traga o passo a passo claro.
+Se a dúvida não for relacionada a rotinas de clínica ou sistema médico, responda educadamente informando que você é exclusiva para suporte do Feegow.`;
 
-        promptContent = `Pesquise no ajuda.feegow.com e resolva a dúvida: "${query}"`;
-        tools = [{ googleSearch: {} }];
+        promptContent = `Dúvida do usuário: "${query}"\nPor favor, forneça o passo a passo de cliques detalhado.`;
+        
+        // CULPADO REMOVIDO: Nenhuma ferramenta de busca injetada aqui. Zero custos ocultos.
+        
     } else if (currentAction === 'polish') {
         systemInstructions = "Você é um revisor de qualidade de atendimento.";
         promptContent = `Reescreva o rascunho usando tom ${context}:\n\nRascunho: ${query}`;
+    } else if (currentAction === 'draft_email') {
+        systemInstructions = "Redija um e-mail de resposta formal e cordial para o cliente baseado na resolução técnica.";
+        promptContent = `Dúvida: ${query}\nResolução Técnica: ${context}`;
+    } else if (currentAction === 'summarize') {
+        systemInstructions = "Resuma o atendimento técnico em tópicos para fechamento de ticket.";
+        promptContent = `Dúvida: ${query}\nResposta: ${context}`;
     }
 
     const requestBody = {
@@ -60,10 +66,6 @@ Se a dúvida não estiver no ajuda.feegow.com, responda informando que não loca
             parts: [{ text: systemInstructions }]
         }
     };
-
-    if (tools.length > 0) {
-        requestBody.tools = tools;
-    }
 
     try {
         const response = await fetch(apiUrl, {
@@ -86,26 +88,14 @@ Se a dúvida não estiver no ajuda.feegow.com, responda informando que não loca
 
         if (candidate && candidate.content?.parts?.[0]?.text) {
             let text = candidate.content.parts[0].text;
-            let citations = [];
-            
-            const metadata = candidate.groundingMetadata;
-            if (metadata && metadata.groundingAttributions) {
-                citations = metadata.groundingAttributions
-                    .map(att => ({ uri: att.web?.uri, title: att.web?.title }))
-                    .filter(src => src.uri && src.title);
-            } else if (metadata && metadata.groundingChunks) {
-                 citations = metadata.groundingChunks
-                    .filter(chunk => chunk.web?.uri && chunk.web?.title)
-                    .map(chunk => ({ uri: chunk.web.uri, title: chunk.web.title }));
-            }
-
-            return res.status(200).json({ text, citations });
+            // Citações dinâmicas de busca removidas pois o Search foi desativado.
+            return res.status(200).json({ text, citations: [] });
         }
 
         return res.status(200).json({ error: 'O modelo não retornou um texto válido.' });
 
     } catch (error) {
-        console.error("Erro interno catastrófico no servidor:", error.message);
+        console.error("Erro interno no Node.js:", error.message);
         return res.status(500).json({ error: 'Falha interna na Função Vercel.' });
     }
 }
