@@ -17,7 +17,6 @@
         body {
             font-family: 'Inter', sans-serif;
         }
-        /* Barras de rolagem customizadas e sutis */
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -38,7 +37,6 @@
         .glow-active {
             animation: pulse-teal 2.5s infinite;
         }
-        /* Estilização controlada para o Markdown gerado pela IA */
         .prose-response p {
             margin-bottom: 0.75rem;
         }
@@ -77,10 +75,9 @@
     <!-- Container Global para Toasts/Notificações Flutuantes -->
     <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-    <!-- 1. CABEÇALHO PRINCIPAL DO PORTAL (Visibilidade Clara de Marca) -->
+    <!-- CABEÇALHO PRINCIPAL DO PORTAL -->
     <header class="bg-white text-[#1B2734] border-b border-slate-200 px-6 py-4 flex flex-wrap items-center justify-between z-10 shadow-sm">
         <div class="flex items-center space-x-3">
-            <!-- Ícone de Livro/Central de Ajuda -->
             <div class="bg-[#00b39b]/10 p-2.5 rounded-xl border border-[#00b39b]/20 text-[#00b39b]">
                 <i class="fa-solid fa-book-open text-2xl"></i>
             </div>
@@ -95,15 +92,12 @@
             </div>
         </div>
         
-        <!-- Bloco de Ações e Usuário à Direita -->
         <div class="flex items-center space-x-4 mt-3 sm:mt-0">
-            <!-- Botão Central de IA -->
             <button onclick="toggleIaToolbox()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs px-3.5 py-2 rounded-xl font-bold flex items-center gap-1.5 transition-colors shadow-xs">
                 <i class="fa-solid fa-wand-magic-sparkles text-indigo-500 animate-pulse"></i>
                 Painel de Produtividade IA
             </button>
 
-            <!-- Informações do Usuário Conectado -->
             <div id="user-info-box" class="flex items-center gap-3 bg-slate-50 p-2 rounded-xl border border-slate-200">
                 <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-[#00b39b] to-[#00d1b5] text-white flex items-center justify-center font-bold text-xs shadow-inner">
                     <i class="fa-solid fa-user-check"></i>
@@ -117,15 +111,12 @@
                 </button>
             </div>
 
-            <!-- Monitores de Saúde do Sistema (Empilhados para economia de espaço) -->
             <div class="flex flex-col gap-1.5">
-                <!-- Indicador 1: Grounding (Central de Ajuda) -->
                 <span id="connection-status-badge" class="bg-slate-50 text-slate-500 border border-slate-200 text-[10px] px-2.5 py-1 rounded-full font-semibold flex items-center gap-1.5 shadow-xs transition-colors duration-300" title="Verificando conexão com a Central de Ajuda...">
                     <span id="connection-status-dot" class="h-1.5 w-1.5 rounded-full bg-slate-400 animate-pulse"></span>
                     <span id="connection-status-text">Central: Conectando...</span>
                 </span>
                 
-                <!-- Indicador 2: Motor de IA (Gemini API) -->
                 <span id="gemini-status-badge" class="bg-slate-50 text-slate-500 border border-slate-200 text-[10px] px-2.5 py-1 rounded-full font-semibold flex items-center gap-1.5 shadow-xs transition-colors duration-300" title="Verificando disponibilidade do Proxy do Gemini...">
                     <span id="gemini-status-dot" class="h-1.5 w-1.5 rounded-full bg-slate-400 animate-pulse"></span>
                     <span id="gemini-status-text">Gemini: Conectando...</span>
@@ -134,16 +125,13 @@
         </div>
     </header>
 
-    <!-- 2. CONTAINER PRINCIPAL DO CHAT -->
+    <!-- CONTAINER PRINCIPAL DO CHAT -->
     <main class="flex-1 flex flex-row bg-slate-100 h-full overflow-hidden relative">
         
-        <!-- Painel Esquerdo: Conversa Principal -->
         <div class="flex-1 flex flex-col h-full overflow-hidden relative">
             
-            <!-- Área Foco das Mensagens (Scroll) -->
             <div id="chat-messages-scroll" class="flex-1 overflow-y-auto p-6 space-y-4">
                 
-                <!-- Canal Oficial Banner -->
                 <div class="flex justify-center my-3">
                     <span class="bg-emerald-500/10 text-emerald-700 border border-emerald-500/20 rounded-full px-5 py-1.5 text-xs font-bold shadow-xs flex items-center gap-1.5">
                         <i class="fa-solid fa-shield-halved"></i>
@@ -151,7 +139,6 @@
                     </span>
                 </div>
 
-                <!-- Mensagem Inicial Padrão da ErikIA -->
                 <div class="flex items-start gap-3">
                     <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-[#00b39b] to-[#00d1b5] text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-md">E</div>
                     <div class="bg-white border border-slate-200 rounded-2xl rounded-tl-none p-4 max-w-[80%] shadow-xs">
@@ -165,7 +152,6 @@
                     </div>
                 </div>
 
-                <!-- Log de Cliente Conectado -->
                 <div class="flex justify-center my-2">
                     <span class="bg-[#1B2734]/5 text-[#1B2734] border border-[#1B2734]/10 rounded-lg px-3 py-1.5 text-[10px] font-semibold flex items-center gap-1.5">
                         <i class="fa-solid fa-fingerprint"></i>
@@ -175,7 +161,6 @@
 
             </div>
 
-            <!-- 3. BARRA DE ENTRADA DO CHAT -->
             <div class="p-4 bg-white border-t border-slate-200 font-sans">
                 <div class="max-w-4xl mx-auto flex gap-3">
                     <input type="text" id="chat-input-field" placeholder="Digite sua dúvida aqui... Ex: 'Como configurar NOA notes' ou 'Como faturar guia TISS'" 
@@ -188,7 +173,6 @@
             </div>
         </div>
 
-        <!-- Painel Direito: Caixa de Ferramentas de IA (Colapsável) -->
         <aside id="ia-toolbox-panel" class="hidden w-80 bg-white border-l border-slate-200 flex-col overflow-y-auto p-5 space-y-6 transition-all duration-300">
             <div>
                 <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
@@ -201,7 +185,6 @@
                     </button>
                 </div>
 
-                <!-- Polidor de Rascunhos -->
                 <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
                     <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
                         <i class="fa-solid fa-wand-magic"></i>
@@ -221,7 +204,6 @@
                         </button>
                     </div>
                     
-                    <!-- Campo de Saída -->
                     <div id="polish-output-container" class="hidden space-y-1.5 pt-2 border-t border-slate-200/60">
                         <label class="block text-[9px] font-bold text-slate-400 uppercase">Resultado Polido:</label>
                         <div id="polish-output" class="bg-white p-2.5 rounded-lg border border-slate-200 text-xs leading-relaxed max-h-36 overflow-y-auto select-all"></div>
@@ -232,7 +214,6 @@
                 </div>
             </div>
 
-            <!-- Dicas de Atendimento Docplanner -->
             <div class="bg-indigo-50 border border-indigo-100 p-4 rounded-xl space-y-2">
                 <h4 class="text-xs font-bold text-indigo-800 flex items-center gap-1.5">
                     <i class="fa-solid fa-lightbulb"></i>
@@ -247,7 +228,6 @@
         </aside>
     </main>
 
-    <!-- Modal de Resultados de IA (E-mail / Resumo de Ticket) -->
     <div id="ia-output-modal" class="fixed inset-0 bg-slate-950/70 hidden flex items-center justify-center z-50 p-4 transition-opacity duration-200">
         <div class="bg-white border border-slate-200 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
             <div class="flex items-center justify-between pb-2 border-b border-slate-100">
@@ -281,10 +261,8 @@
     </div>
 
     <script>
-        // Memória temporária de interações para envio inteligente de feedbacks
         const chatMemoryStore = {};
         
-        // Base de contingência local RAG (caso ocorram problemas extremos de conexão de rede externa)
         const safetyBackupKnowledge = [
             {
                 keywords: ["noa", "notes", "anotador", "ia", "resumo", "resumos", "transcrever"],
@@ -309,7 +287,6 @@
             }
         ];
 
-        // Função utilitária para exibir alertas flutuantes (toasts)
         function notifyUser(message, type = "error") {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -327,7 +304,7 @@
                 toast.classList.replace('opacity-100', 'opacity-0');
                 toast.classList.add('translate-y-2');
                 setTimeout(() => toast.remove(), 300);
-            }, 4500);
+            }, 5500); // Aumentado para 5.5s para dar tempo de ler o erro
         }
 
         async function fetchGeminiGroundedResponse(userQuery) {
@@ -341,7 +318,18 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error(`Erro na API: ${response.status}`);
+                    // SEÇÃO MODIFICADA: Captura e exibe o erro real na tela do usuário
+                    let errorMsg = `Erro ${response.status}`;
+                    try {
+                        const errorData = await response.json();
+                        errorMsg = errorData.error || errorMsg;
+                    } catch(e) {
+                        const errorText = await response.text();
+                        errorMsg = errorText.substring(0, 50) + "...";
+                    }
+                    console.error("Erro da Vercel/API:", errorMsg);
+                    notifyUser(`Falha de Servidor: ${errorMsg}. Aperte F12 para inspecionar.`, "error");
+                    return { status: "fallback" };
                 }
 
                 const data = await response.json();
@@ -354,15 +342,16 @@
                     };
                 }
 
+                notifyUser("API retornou sucesso, mas o texto da resposta veio vazio.", "error");
                 return { status: "empty" };
 
             } catch (err) {
-                console.warn("Proxy seguro indisponível ou em ambiente local. Verifique as configurações.", err);
+                console.error("Erro fatal de rede ou CORS:", err);
+                notifyUser("Falha de conexão com o servidor (/api/chat). Aperte F12 para logs.", "error");
                 return { status: "fallback" };
             }
         }
 
-        // Controladores visuais do chat (Digitação)
         function showLoadingDotAnimation() {
             const container = document.getElementById('chat-messages-scroll');
             const indicator = document.createElement('div');
@@ -404,7 +393,6 @@
             const nameLabel = isUser ? 'Você' : 'ErikIA';
             const labelColor = isUser ? 'text-[#e6fffc]' : 'text-[#00b39b]';
 
-            // Processamento do corpo da mensagem
             let bodyHTML = text;
             if (isRichMarkdown && typeof marked !== 'undefined') {
                 bodyHTML = marked.parse(text);
@@ -439,7 +427,6 @@
                                         class="bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 font-bold px-3 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5" title="Resumir caso em formato de ticket de closure">
                                     <i class="fa-solid fa-file-invoice"></i> Resumir
                                 </button>
-                                <!-- Botão de Cópia Integrada -->
                                 <button onclick="copyToClipboard('${uniqueId}')" id="copy-action-btn-${uniqueId}" 
                                         class="bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 font-bold px-4 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5">
                                     <i class="fa-solid fa-copy"></i> Copiar Texto
@@ -463,7 +450,6 @@
             container.scrollTop = container.scrollHeight;
         }
 
-        // Copiar resposta do chat (Compatível com Sandbox)
         function copyToClipboard(msgId) {
             const element = document.getElementById(`content-body-${msgId}`);
             if (!element) return;
@@ -478,7 +464,6 @@
 
             notifyUser("Texto copiado para a área de transferência!", "success");
 
-            // Feedback visual no botão de cópia
             const copyBtn = document.getElementById(`copy-action-btn-${msgId}`);
             if (copyBtn) {
                 const originalContent = copyBtn.innerHTML;
@@ -492,21 +477,15 @@
             }
         }
 
-        // Submissão e processamento da pergunta do usuário
         async function submitUserQuery() {
             const inputField = document.getElementById('chat-input-field');
             const queryText = inputField.value.trim();
             if (!queryText) return;
 
-            // Limpa o input imediatamente
             inputField.value = '';
-
-            // Renderiza a pergunta do usuário na tela
             printChatMessage('Você', queryText, true);
-
             showLoadingDotAnimation();
 
-            // Identifica saudações comuns para respostas empáticas rápidas
             const lowerQuery = queryText.toLowerCase().replace(/[?.,!]/g, "").trim();
             const greetings = ["oi", "olá", "ola", "bom dia", "boa tarde", "boa noite", "tudo bem", "tudo bom"];
             if (greetings.includes(lowerQuery)) {
@@ -517,11 +496,9 @@
                 return;
             }
 
-            // Mapeia resumo curto do tema para feedback (primeiras 5 palavras)
             const cleanText = queryText.replace(/[^\w\s]/g, '');
             const topicSummary = cleanText.split(' ').slice(0, 5).join(' ');
 
-            // Envia requisição para a API Grounded
             const responseData = await fetchGeminiGroundedResponse(queryText);
             removeLoadingDotAnimation();
 
@@ -530,7 +507,6 @@
             if (responseData.status === "success") {
                 let answerMarkdown = responseData.text;
 
-                // Anexa as citações reais no final da resposta
                 if (responseData.citations && responseData.citations.length > 0) {
                     answerMarkdown += "\n\n📚 **Artigos de Referência Encontrados:**\n";
                     responseData.citations.slice(0, 2).forEach(src => {
@@ -538,7 +514,6 @@
                     });
                 }
 
-                // Armazena na memória temporária para relatórios de feedback
                 chatMemoryStore[messageUniqueId] = {
                     query: queryText,
                     answer: responseData.text
@@ -551,7 +526,6 @@
                 }, true);
 
             } else {
-                // Ativação do RAG Backup Local caso a API falhe ou o Proxy esteja inacessível
                 let backupMatch = null;
                 for (let doc of safetyBackupKnowledge) {
                     const matched = doc.keywords.some(kw => lowerQuery.includes(kw));
@@ -562,13 +536,7 @@
                 }
 
                 if (backupMatch) {
-                    const backupMarkdown = `Oi! Vamos analisar isso juntos. 💜 *(Mecanismo de Segurança Local Ativo)*
-
-Aqui está o procedimento oficial extraído da nossa base para **${backupMatch.topic}**:
-
-${backupMatch.content}
-
-📚 *Fonte Oficial:* [${backupMatch.title}](${backupMatch.url})`;
+                    const backupMarkdown = `Oi! Vamos analisar isso juntos. 💜 *(Mecanismo de Segurança Local Ativo)*\n\nAqui está o procedimento oficial extraído da nossa base para **${backupMatch.topic}**:\n\n${backupMatch.content}\n\n📚 *Fonte Oficial:* [${backupMatch.title}](${backupMatch.url})`;
 
                     chatMemoryStore[messageUniqueId] = {
                         query: queryText,
@@ -582,51 +550,40 @@ ${backupMatch.content}
                     }, true);
 
                 } else {
-                    // Impede alucinações caso não localize nada
-                    const notFoundMarkdown = `Olá, Andre Mano. Consultei o acervo técnico do Feegow mas não localizei artigos oficiais para essa dúvida específica.
-
-Por favor, **gostaria de falar com o nosso time de suporte ou abrir um chamado?** Você pode clicar no botão de "Ajuda" (ícone de interrogação) no menu superior do seu Feegow para ser atendido pelo nosso time técnico de Customer Care!`;
-
+                    const notFoundMarkdown = `Olá, Andre Mano. Consultei o acervo técnico do Feegow mas não localizei artigos oficiais para essa dúvida específica.\n\nPor favor, **gostaria de falar com o nosso time de suporte ou abrir um chamado?** Você pode clicar no botão de "Ajuda" (ícone de interrogação) no menu superior do seu Feegow para ser atendido pelo nosso time técnico de Customer Care!`;
                     printChatMessage('ErikIA', notFoundMarkdown, false);
                 }
             }
         }
 
-        // Função de Classificação Inteligente Cruzada (Pergunta + Resposta)
         function analyzeCategoryByContent(query, answer) {
             const corpus = (query + " " + answer).toLowerCase();
-
             if (corpus.includes("noa") || corpus.includes("notes") || corpus.includes("anotador") || corpus.includes("resumo") || corpus.includes("ia") || corpus.includes("atestado")) return "Prontuário";
             if (corpus.includes("guia") || corpus.includes("tiss") || corpus.includes("sadt") || corpus.includes("faturamento") || corpus.includes("convênio") || corpus.includes("xml")) return "Faturamento";
             if (corpus.includes("configurar") || corpus.includes("configuração") || corpus.includes("parâmetro") || corpus.includes("permissão") || corpus.includes("ativar")) return "Configurações";
             if (corpus.includes("agenda") || corpus.includes("agendamento") || corpus.includes("médico") || corpus.includes("sms") || corpus.includes("lembrete")) return "Agenda";
             if (corpus.includes("pagamento") || corpus.includes("financeiro") || corpus.includes("caixa") || corpus.includes("saldo") || corpus.includes("conta")) return "Financeiro";
             if (corpus.includes("cadastro") || corpus.includes("funcionário") || corpus.includes("profissional") || corpus.includes("paciente") || corpus.includes("perfil")) return "Cadastros";
-
             return "Outros";
         }
 
-        // Registro de Feedback e Publicação de Logs no Google Sheets
         async function registerSupportVote(id, topicSummary, voteValue) {
             const container = document.getElementById(`vote-section-${id}`);
             if (!container) return;
 
-            // Busca os dados da memória
             const interaction = chatMemoryStore[id] || { query: "Dúvida Geral", answer: "" };
             const finalCategory = analyzeCategoryByContent(interaction.query, interaction.answer);
             const formattedDate = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
 
-            // Payload contendo o GID de direcionamento para a aba específica da planilha
             const payload = {
                 "data_uso": formattedDate,
                 "nome_agente": "Andre Mano",
                 "topico_duvida": topicSummary,
                 "categoria": finalCategory,
                 "ajuda_efetiva": voteValue,
-                "gid": "526365502" // ID exato da aba especificada
+                "gid": "526365502"
             };
 
-            // Atualiza visualmente os botões
             const brandColor = voteValue === 'Sim' ? 'text-emerald-500' : 'text-rose-500';
             const iconSymbol = voteValue === 'Sim' ? 'fa-circle-check' : 'fa-circle-xmark';
 
@@ -636,7 +593,6 @@ Por favor, **gostaria de falar com o nosso time de suporte ou abrir um chamado?*
                 </span>
             `;
 
-            // Publicação assíncrona para o Web App do Google Apps Script
             const appsScriptWebhookUrl = "https://script.google.com/macros/s/AKfycbwB5Y5Yp0dPo_IcJHaSoIf0xhRjzM3DTFUNJ0XvsDe68hQ0Am7lXCqvJftIMlNKC8_2/exec";
 
             try {
@@ -659,7 +615,6 @@ Por favor, **gostaria de falar com o nosso time de suporte ou abrir um chamado?*
             }
         }
 
-        // Controle de Log Out do Usuário (Simulado)
         function handleUserSignOut() {
             notifyUser("Sessão corporativa encerrada!");
             document.getElementById('user-info-box').innerHTML = `
@@ -672,42 +627,33 @@ Por favor, **gostaria de falar com o nosso time de suporte ou abrir um chamado?*
             const badge = document.getElementById('connection-status-badge');
             const dot = document.getElementById('connection-status-dot');
             const text = document.getElementById('connection-status-text');
-
             if (!badge) return;
 
-            // 1. Validação rápida: Usuário está sem internet local?
             if (!navigator.onLine) {
                 setOfflineStatus(badge, dot, text, "Sem Internet");
                 return;
             }
 
             try {
-                // 2. Ping real na Central da Feegow (usando no-cors para não ser barrado pela segurança deles)
                 await fetch('https://ajuda.feegow.com/support/home', { mode: 'no-cors', cache: 'no-store' });
-                
-                // Sucesso: A central respondeu!
                 badge.className = "bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] px-2.5 py-1 rounded-full font-semibold flex items-center gap-1.5 shadow-xs transition-colors duration-300";
                 dot.className = "h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping";
                 text.innerText = "Central: Online";
             } catch (error) {
-                // Erro: O domínio da Feegow caiu, bloqueio de rede ou falha de DNS
                 setOfflineStatus(badge, dot, text, "Central Indisponível");
             }
         }
 
-        // Função auxiliar para pintar o selo de vermelho e pausar animações
         function setOfflineStatus(badge, dot, text, message) {
             badge.className = "bg-rose-50 text-rose-700 border border-rose-200 text-[10px] px-2.5 py-1 rounded-full font-semibold flex items-center gap-1.5 shadow-xs transition-colors duration-300";
-            dot.className = "h-1.5 w-1.5 rounded-full bg-rose-500"; // Remove o "animate-ping" visualmente
+            dot.className = "h-1.5 w-1.5 rounded-full bg-rose-500";
             text.innerText = message;
         }
 
-        // Nova verificação de saúde exclusiva para o backend do Gemini
         async function checkGeminiStatus() {
             const badge = document.getElementById('gemini-status-badge');
             const dot = document.getElementById('gemini-status-dot');
             const text = document.getElementById('gemini-status-text');
-
             if (!badge) return;
 
             if (!navigator.onLine) {
@@ -716,10 +662,7 @@ Por favor, **gostaria de falar com o nosso time de suporte ou abrir um chamado?*
             }
 
             try {
-                // Dispara um ping super leve (OPTIONS pre-flight) para o proxy Vercel
-                // Isso apenas checa se o servidor está ativo sem gastar cota na API real da Google
                 const response = await fetch('/api/chat', { method: 'OPTIONS' });
-                
                 if (response.ok) {
                     badge.className = "bg-indigo-50 text-indigo-700 border border-indigo-200 text-[10px] px-2.5 py-1 rounded-full font-semibold flex items-center gap-1.5 shadow-xs transition-colors duration-300";
                     dot.className = "h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse";
@@ -732,7 +675,6 @@ Por favor, **gostaria de falar com o nosso time de suporte ou abrir um chamado?*
             }
         }
 
-        // Iniciar verificações: ao carregar, a cada 30 segundos, e quando a internet oscilar
         window.addEventListener('load', () => {
             checkHelpCenterStatus();
             checkGeminiStatus();
@@ -749,9 +691,6 @@ Por favor, **gostaria de falar com o nosso time de suporte ou abrir um chamado?*
             checkHelpCenterStatus();
             checkGeminiStatus();
         });
-
-
-        // --- NOVAS FUNÇÕES: CENTRAL DE PRODUTIVIDADE COM GEMINI ---
 
         function toggleIaToolbox() {
             const panel = document.getElementById('ia-toolbox-panel');
@@ -784,7 +723,10 @@ Por favor, **gostaria de falar com o nosso time de suporte ou abrir um chamado?*
                     })
                 });
 
-                if (!response.ok) throw new Error("Erro na requisição.");
+                if (!response.ok) {
+                    notifyUser(`Erro da Vercel no Polidor: ${response.status}. Aperte F12 para inspecionar.`, "error");
+                    throw new Error("Erro na requisição.");
+                }
                 const data = await response.json();
 
                 if (data.text) {
@@ -858,7 +800,10 @@ Por favor, **gostaria de falar com o nosso time de suporte ou abrir um chamado?*
                     })
                 });
 
-                if (!response.ok) throw new Error("Erro de comunicação com a API.");
+                if (!response.ok) {
+                    notifyUser(`Erro da Vercel: ${response.status}. Aperte F12 para inspecionar.`, "error");
+                    throw new Error("Erro de comunicação com a API.");
+                }
                 const data = await response.json();
 
                 if (data.text) {
@@ -868,7 +813,7 @@ Por favor, **gostaria de falar com o nosso time de suporte ou abrir um chamado?*
                 }
             } catch (err) {
                 console.error(err);
-                document.getElementById('ia-modal-textarea').value = "Ocorreu um erro ao conectar-se ao servidor de proxy. Verifique se o seu backend está ativo e configurado com a variável GEMINI_API_KEY.";
+                document.getElementById('ia-modal-textarea').value = "Ocorreu um erro ao conectar-se ao servidor de proxy. Verifique o console (F12).";
             }
         }
     </script>
