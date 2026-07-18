@@ -28,8 +28,9 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: 'Chave da API do Gemini ausente no servidor.' });
     }
 
-    // Usando o modelo validado da sua lista oficial de permissões (gemini-3.5-flash)
+    // AQUI ESTÁ A CORREÇÃO: Usando o modelo exato da sua lista autorizada!
     const modelName = "gemini-3.5-flash"; 
+    
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`;
 
     let systemInstructions = '';
@@ -71,17 +72,15 @@ Se a dúvida não estiver no ajuda.feegow.com, responda informando que não loca
             body: JSON.stringify(requestBody)
         });
 
-        // CORREÇÃO CRÍTICA DO STREAM: Lê uma vez só se der erro!
         if (!response.ok) {
-            const errorText = await response.text(); // Lendo a fita
+            const errorText = await response.text();
             console.error("Erro retornado pelo Google Gemini:", errorText);
             return res.status(response.status).json({ 
                 error: 'Erro na API do Google.', 
-                details: errorText // Repassa o texto bruto sem ler de novo
+                details: errorText
             });
         }
 
-        // Se deu tudo certo, lê o JSON.
         const data = await response.json();
         const candidate = data.candidates?.[0];
 
