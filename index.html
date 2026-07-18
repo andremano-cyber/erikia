@@ -112,12 +112,12 @@
             </div>
 
             <div class="flex flex-col gap-1.5">
-                <span id="connection-status-badge" class="bg-slate-50 text-slate-500 border border-slate-200 text-[10px] px-2.5 py-1 rounded-full font-semibold flex items-center gap-1.5 shadow-xs transition-colors duration-300" title="Verificando conexão com a Central de Ajuda...">
+                <span id="connection-status-badge" class="bg-slate-50 text-slate-500 border border-slate-200 text-[10px] px-2 py-0.5 rounded-full font-semibold flex items-center gap-1.5 shadow-xs transition-colors duration-300" title="Verificando conexão com a Central de Ajuda...">
                     <span id="connection-status-dot" class="h-1.5 w-1.5 rounded-full bg-slate-400 animate-pulse"></span>
                     <span id="connection-status-text">Central: Conectando...</span>
                 </span>
                 
-                <span id="gemini-status-badge" class="bg-slate-50 text-slate-500 border border-slate-200 text-[10px] px-2.5 py-1 rounded-full font-semibold flex items-center gap-1.5 shadow-xs transition-colors duration-300" title="Verificando disponibilidade do Proxy do Gemini...">
+                <span id="gemini-status-badge" class="bg-slate-50 text-slate-500 border border-slate-200 text-[10px] px-2 py-0.5 rounded-full font-semibold flex items-center gap-1.5 shadow-xs transition-colors duration-300" title="Verificando disponibilidade do Proxy do Gemini...">
                     <span id="gemini-status-dot" class="h-1.5 w-1.5 rounded-full bg-slate-400 animate-pulse"></span>
                     <span id="gemini-status-text">Gemini: Conectando...</span>
                 </span>
@@ -304,11 +304,16 @@
                 toast.classList.replace('opacity-100', 'opacity-0');
                 toast.classList.add('translate-y-2');
                 setTimeout(() => toast.remove(), 300);
-            }, 5500); // Aumentado para 5.5s para dar tempo de ler o erro
+            }, 6000); 
         }
 
         async function fetchGeminiGroundedResponse(userQuery) {
-            const apiUrl = `/api/chat`;
+            // Se estiver rodando localmente (file://), aponta para a Vercel
+            // Se estiver hospedado, usa o caminho relativo
+            let apiUrl = `/api/chat`;
+            if (window.location.protocol === 'file:') {
+                apiUrl = `https://erikiafeegow.vercel.app/api/chat`; 
+            }
 
             try {
                 const response = await fetch(apiUrl, {
@@ -317,18 +322,11 @@
                     body: JSON.stringify({ query: userQuery })
                 });
 
+                // NOVO TRATAMENTO DE STREAM: Lê uma única vez
                 if (!response.ok) {
-                    // SEÇÃO MODIFICADA: Captura e exibe o erro real na tela do usuário
-                    let errorMsg = `Erro ${response.status}`;
-                    try {
-                        const errorData = await response.json();
-                        errorMsg = errorData.error || errorMsg;
-                    } catch(e) {
-                        const errorText = await response.text();
-                        errorMsg = errorText.substring(0, 50) + "...";
-                    }
-                    console.error("Erro da Vercel/API:", errorMsg);
-                    notifyUser(`Falha de Servidor: ${errorMsg}. Aperte F12 para inspecionar.`, "error");
+                    const errorText = await response.text(); 
+                    console.error("Erro da Vercel/API:", errorText);
+                    notifyUser(`Falha de Servidor: Erro ao processar a resposta na API do Google. Aperte F12 para inspecionar.`, "error");
                     return { status: "fallback" };
                 }
 
@@ -342,12 +340,12 @@
                     };
                 }
 
-                notifyUser("API retornou sucesso, mas o texto da resposta veio vazio.", "error");
+                notifyUser("Ocorreu um erro no processamento da resposta pela inteligência artificial.", "error");
                 return { status: "empty" };
 
             } catch (err) {
-                console.error("Erro fatal de rede ou CORS:", err);
-                notifyUser("Falha de conexão com o servidor (/api/chat). Aperte F12 para logs.", "error");
+                console.error("Erro fatal de conexão/CORS no Frontend:", err.message);
+                notifyUser("O sistema local não conseguiu se conectar à Vercel. Verifique F12.", "error");
                 return { status: "fallback" };
             }
         }
@@ -491,7 +489,7 @@
             if (greetings.includes(lowerQuery)) {
                 setTimeout(() => {
                     removeLoadingDotAnimation();
-                    printChatMessage('ErikIA', "Olá, Andre! Tudo ótimo por aqui. Qual dúvida, módulo ou configuração técnica do Feegow nós vamos analisar hoje? 💜");
+                    printChatMessage('ErikIA', "Olá! Tudo ótimo por aqui. Qual dúvida, módulo ou configuração técnica do Feegow nós vamos analisar hoje? 💜");
                 }, 800);
                 return;
             }
@@ -509,7 +507,7 @@
 
                 if (responseData.citations && responseData.citations.length > 0) {
                     answerMarkdown += "\n\n📚 **Artigos de Referência Encontrados:**\n";
-                    responseData.citations.slice(0, 2).forEach(src => {
+                    responseData.citations.slice(0, 3).forEach(src => {
                         answerMarkdown += `* [${src.title}](${src.uri})\n`;
                     });
                 }
@@ -550,7 +548,7 @@
                     }, true);
 
                 } else {
-                    const notFoundMarkdown = `Olá, Andre Mano. Consultei o acervo técnico do Feegow mas não localizei artigos oficiais para essa dúvida específica.\n\nPor favor, **gostaria de falar com o nosso time de suporte ou abrir um chamado?** Você pode clicar no botão de "Ajuda" (ícone de interrogação) no menu superior do seu Feegow para ser atendido pelo nosso time técnico de Customer Care!`;
+                    const notFoundMarkdown = `Olá. Consultei o acervo técnico do Feegow mas não localizei artigos oficiais para essa dúvida específica.\n\nPor favor, **gostaria de falar com o nosso time de suporte ou abrir um chamado?** Você pode clicar no botão de "Ajuda" (ícone de interrogação) no menu superior do seu Feegow para ser atendido pelo nosso time técnico de Customer Care!`;
                     printChatMessage('ErikIA', notFoundMarkdown, false);
                 }
             }
@@ -636,7 +634,7 @@
 
             try {
                 await fetch('https://ajuda.feegow.com/support/home', { mode: 'no-cors', cache: 'no-store' });
-                badge.className = "bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] px-2.5 py-1 rounded-full font-semibold flex items-center gap-1.5 shadow-xs transition-colors duration-300";
+                badge.className = "bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] px-2 py-0.5 rounded-full font-semibold flex items-center gap-1.5 shadow-xs transition-colors duration-300";
                 dot.className = "h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping";
                 text.innerText = "Central: Online";
             } catch (error) {
@@ -645,7 +643,7 @@
         }
 
         function setOfflineStatus(badge, dot, text, message) {
-            badge.className = "bg-rose-50 text-rose-700 border border-rose-200 text-[10px] px-2.5 py-1 rounded-full font-semibold flex items-center gap-1.5 shadow-xs transition-colors duration-300";
+            badge.className = "bg-rose-50 text-rose-700 border border-rose-200 text-[10px] px-2 py-0.5 rounded-full font-semibold flex items-center gap-1.5 shadow-xs transition-colors duration-300";
             dot.className = "h-1.5 w-1.5 rounded-full bg-rose-500";
             text.innerText = message;
         }
@@ -661,14 +659,19 @@
                 return;
             }
 
+            let apiUrl = `/api/chat`;
+            if (window.location.protocol === 'file:') {
+                apiUrl = `https://erikiafeegow.vercel.app/api/chat`; 
+            }
+
             try {
-                const response = await fetch('/api/chat', { method: 'OPTIONS' });
+                const response = await fetch(apiUrl, { method: 'OPTIONS' });
                 if (response.ok) {
-                    badge.className = "bg-indigo-50 text-indigo-700 border border-indigo-200 text-[10px] px-2.5 py-1 rounded-full font-semibold flex items-center gap-1.5 shadow-xs transition-colors duration-300";
+                    badge.className = "bg-indigo-50 text-indigo-700 border border-indigo-200 text-[10px] px-2 py-0.5 rounded-full font-semibold flex items-center gap-1.5 shadow-xs transition-colors duration-300";
                     dot.className = "h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse";
                     text.innerText = "Gemini: Online";
                 } else {
-                    setOfflineStatus(badge, dot, text, "Gemini: Erro no Servidor");
+                    setOfflineStatus(badge, dot, text, "Gemini: Erro na Vercel");
                 }
             } catch (error) {
                 setOfflineStatus(badge, dot, text, "Gemini: Backend Inacessível");
@@ -712,8 +715,11 @@
             outputContainer.classList.remove('hidden');
             outputDiv.innerHTML = `<span class="text-slate-400 italic flex items-center gap-1.5"><i class="fa-solid fa-circle-notch animate-spin"></i> Polindo texto com o Gemini...</span>`;
 
+            let apiUrl = `/api/chat`;
+            if (window.location.protocol === 'file:') { apiUrl = `https://erikiafeegow.vercel.app/api/chat`; }
+
             try {
-                const response = await fetch('/api/chat', {
+                const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -789,8 +795,11 @@
             const title = actionType === 'draft_email' ? '📧 Rascunho de E-mail de Suporte' : '📋 Sumário Interno do Ticket';
             openIaOutputModal(title, "Processando solicitação com o Gemini, por favor aguarde...");
 
+            let apiUrl = `/api/chat`;
+            if (window.location.protocol === 'file:') { apiUrl = `https://erikiafeegow.vercel.app/api/chat`; }
+
             try {
-                const response = await fetch('/api/chat', {
+                const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
