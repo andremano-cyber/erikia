@@ -29,7 +29,7 @@ export default async function handler(req, res) {
     }
 
     // Usando o modelo validado, estável e com suporte ao Google Search para a API v1beta
-    const modelName = "gemini-2.5-flash"; 
+    const modelName = "gemini-3-flash-live"; 
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`;
 
     let systemInstructions = '';
