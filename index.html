@@ -308,7 +308,7 @@
         }
 
         async function fetchGeminiGroundedResponse(userQuery) {
-            const apiUrl = `/api/chat.js`;
+            const apiUrl = `/api/chat`;
 
             try {
                 const response = await fetch(apiUrl, {
@@ -347,7 +347,7 @@
 
             } catch (err) {
                 console.error("Erro fatal de rede ou CORS:", err);
-                notifyUser("Falha de conexão com o servidor (/api/chat.js). Aperte F12 para logs.", "error");
+                notifyUser("Falha de conexão com o servidor (/api/chat). Aperte F12 para logs.", "error");
                 return { status: "fallback" };
             }
         }
@@ -662,7 +662,7 @@
             }
 
             try {
-                const response = await fetch('/api/chat.js', { method: 'OPTIONS' });
+                const response = await fetch('/api/chat', { method: 'OPTIONS' });
                 if (response.ok) {
                     badge.className = "bg-indigo-50 text-indigo-700 border border-indigo-200 text-[10px] px-2.5 py-1 rounded-full font-semibold flex items-center gap-1.5 shadow-xs transition-colors duration-300";
                     dot.className = "h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse";
@@ -713,7 +713,7 @@
             outputDiv.innerHTML = `<span class="text-slate-400 italic flex items-center gap-1.5"><i class="fa-solid fa-circle-notch animate-spin"></i> Polindo texto com o Gemini...</span>`;
 
             try {
-                const response = await fetch('/api/chat.js', {
+                const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -790,7 +790,7 @@
             openIaOutputModal(title, "Processando solicitação com o Gemini, por favor aguarde...");
 
             try {
-                const response = await fetch('/api/chat.js', {
+                const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
