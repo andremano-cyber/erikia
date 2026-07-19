@@ -290,7 +290,7 @@
         if (typeof localKnowledgeBase === 'undefined') {
             console.warn("⚠️ Arquivo base_local.js não foi carregado! Usando fallback mínimo de segurança.");
             isRagExternalLoaded = false;
-            var localKnowledgeBase = [
+            window.localKnowledgeBase = [
                 {
                     keywords: ["noa", "notes", "anotador"],
                     topic: "Configurar NOA Notes",
