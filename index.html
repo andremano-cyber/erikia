@@ -4,34 +4,70 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ErikIA - Assistente Virtual de Suporte Interno Feegow</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Marked.js para renderização de Markdown -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: rgba(0, 179, 155, 0.3); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #00b39b; }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Barras de rolagem personalizadas */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 179, 155, 0.3);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00b39b;
+        }
         @keyframes pulse-teal {
             0%, 100% { box-shadow: 0 0 15px rgba(0, 179, 155, 0.2); }
             50% { box-shadow: 0 0 25px rgba(0, 179, 155, 0.5); }
         }
-        .glow-avatar { animation: pulse-teal 3s infinite; }
-        .prose-chat-response p { margin-bottom: 0.75rem; }
-        .prose-chat-response p:last-child { margin-bottom: 0; }
-        .prose-chat-response ul, .prose-chat-response ol { margin-left: 1.25rem; margin-bottom: 0.75rem; list-style-type: decimal; }
-        .prose-chat-response ul { list-style-type: disc; }
-        .prose-chat-response a { color: #00b39b; text-decoration: underline; font-weight: 600; }
-        .prose-chat-response a:hover { color: #009a84; }
+        .glow-avatar {
+            animation: pulse-teal 3s infinite;
+        }
+        .prose-chat-response p {
+            margin-bottom: 0.75rem;
+        }
+        .prose-chat-response p:last-child {
+            margin-bottom: 0;
+        }
+        .prose-chat-response ul, .prose-chat-response ol {
+            margin-left: 1.25rem;
+            margin-bottom: 0.75rem;
+            list-style-type: decimal;
+        }
+        .prose-chat-response ul {
+            list-style-type: disc;
+        }
+        .prose-chat-response a {
+            color: #00b39b;
+            text-decoration: underline;
+            font-weight: 600;
+        }
+        .prose-chat-response a:hover {
+            color: #009a84;
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 h-screen flex flex-col overflow-hidden">
 
+    <!-- Container para Notificações Flutuantes (Toasts) -->
     <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
+    <!-- Cabeçalho Principal (Estilo Corporativo Docplanner/Doctoralia) -->
     <header class="bg-white text-[#1B2734] border-b border-slate-200 px-6 py-4 flex flex-wrap items-center justify-between z-10 shadow-sm">
         <div class="flex items-center space-x-3">
             <div class="bg-[#00b39b]/10 p-2 rounded-xl border border-[#00b39b]/30">
@@ -49,6 +85,7 @@
         </div>
         
         <div class="flex items-center space-x-4 mt-2 sm:mt-0">
+            <!-- Identidade do Usuário Autenticado no Topo -->
             <div id="logged-user-box" class="hidden flex items-center gap-3 bg-slate-50 p-2.5 rounded-xl border border-slate-200 shadow-sm">
                 <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-[#00b39b] to-[#00d1b5] text-white flex items-center justify-center font-bold text-xs shadow-inner">
                     <i class="fa-solid fa-user-check"></i>
@@ -62,33 +99,47 @@
                 </button>
             </div>
 
-            <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5 shadow-sm">
-                <span class="h-2 w-2 rounded-full bg-emerald-500 animate-ping"></span>
-                API Ativa
-            </span>
+            <div class="flex items-center gap-2">
+                <!-- Status Check: Motor da API -->
+                <span title="Motor Gemini Operacional" class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] sm:text-xs px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5 shadow-sm cursor-help">
+                    <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    API Ativa
+                </span>
+                
+                <!-- Status Check: Ferramenta Google Search -->
+                <span title="Ferramenta de Pesquisa na Web Integrada" class="bg-blue-50 text-blue-700 border border-blue-200 text-[10px] sm:text-xs px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5 shadow-sm cursor-help">
+                    <i class="fa-brands fa-google text-blue-500"></i>
+                    Search Ativo
+                </span>
+            </div>
         </div>
     </header>
 
+    <!-- Container Principal do App -->
     <div class="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
+        
+        <!-- Janela Conversacional e Tela de Bloqueio -->
         <main class="flex-1 flex flex-col bg-slate-100 h-full overflow-hidden relative">
             
+            <!-- Bloqueio de Tela (Ativo até o usuário inserir um e-mail válido @docplanner) -->
             <div id="chat-lock-overlay" class="absolute inset-0 bg-slate-900/60 backdrop-blur-md z-30 flex flex-col items-center justify-center p-6 text-center transition-all duration-300">
-                <div class="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl space-y-5">
+                <div class="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-150">
                     <div class="w-16 h-16 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center mx-auto text-rose-500 text-2xl">
                         <i class="fa-solid fa-user-lock"></i>
                     </div>
                     <div class="space-y-2">
                         <h3 class="text-lg font-bold text-slate-900">ErikIA Bloqueada</h3>
                         <p class="text-xs text-slate-500 leading-relaxed">
-                            Identifique-se com seu e-mail de acesso ao Feegow para utilizar a ErikIA.
+                            Para iniciar as consultas, tirar dúvidas ou testar as simulações, faça login com seu e-mail corporativo Docplanner.
                         </p>
                     </div>
-                    <button onclick="openAuthModal()" class="w-full bg-[#00b39b] hover:bg-[#009a84] text-white font-semibold py-2.5 rounded-xl text-xs transition-colors shadow-md flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-right-to-bracket"></i> Iniciar
+                    <button onclick="openAuthModal()" class="w-full bg-[#00b39b] hover:bg-[#009a84] text-white font-semibold py-2.5 rounded-xl text-xs transition-colors shadow-md shadow-[#00b39b]/20 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-right-to-bracket"></i> Acessar com E-mail Docplanner
                     </button>
                 </div>
             </div>
 
+            <!-- Cabeçalho do Chat -->
             <div class="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between shadow-sm z-10">
                 <div class="flex items-center gap-3.5">
                     <div class="relative">
@@ -107,16 +158,33 @@
                 </div>
             </div>
 
+            <!-- Área de Mensagens -->
             <div id="chat-messages" class="flex-1 overflow-y-auto p-6 space-y-4">
+                
                 <div class="flex justify-center my-2">
                     <span class="bg-[#00b39b]/10 text-[#00b39b] border border-[#00b39b]/20 rounded-full px-4 py-1.5 text-xs font-semibold shadow-sm flex items-center gap-1.5">
                         <i class="fa-solid fa-shield-halved"></i>
                         Ambiente Seguro de Auxílio Técnico - Docplanner Corp
                     </span>
                 </div>
-                <!-- Welcome message gets populated via JS after login -->
+
+                <!-- Mensagem de Boas-vindas -->
+                <div class="flex items-start gap-3">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-[#00b39b] to-[#00d1b5] text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-md">E</div>
+                    <div class="bg-white border border-slate-200 rounded-2xl rounded-tl-none p-4.5 max-w-[80%] shadow-sm">
+                        <span class="block text-[10px] font-bold uppercase tracking-wider mb-1 text-[#00b39b]">ErikIA</span>
+                        <p class="text-sm leading-relaxed text-slate-800">
+                            Olá, guerreiro! Eu sou a <strong>ErikIA</strong>, assistente sênior baseada em toda a nossa inteligência de suporte do Feegow.
+                        </p>
+                        <p class="text-sm leading-relaxed text-slate-800 mt-2">
+                            Estou integrada em tempo real com a central de suporte <strong>ajuda.feegow.com</strong>. Faça o login com seu e-mail corporativo para que todas as suas interações e feedbacks fiquem salvos diretamente na planilha de controle da equipe!
+                        </p>
+                    </div>
+                </div>
+
             </div>
 
+            <!-- Entrada de Texto -->
             <div class="p-4 bg-white border-t border-slate-200 font-sans">
                 <div class="max-w-4xl mx-auto flex gap-3">
                     <input type="text" id="chat-input" placeholder="Pergunte sobre configurações, faturamento ou dúvidas de suporte..." 
@@ -130,49 +198,75 @@
         </main>
     </div>
 
+    <!-- Modal de Login Corporativo -->
     <div id="login-modal" class="fixed inset-0 bg-slate-950/70 hidden flex items-center justify-center z-50 p-4 transition-opacity duration-200">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 relative">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150 relative">
             
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 bg-[#00b39b]/10 rounded-xl flex items-center justify-center text-[#00b39b]">
                     <i class="fa-solid fa-shield-halved text-xl"></i>
                 </div>
                 <div>
-                    <h3 class="font-bold text-slate-100 text-base">Acesso ao Suporte</h3>
+                    <h3 class="font-bold text-slate-100 text-base">Login Corporativo Docplanner</h3>
+                    <p class="text-[10px] text-slate-500">Validação obrigatória de Acesso</p>
                 </div>
             </div>
             
-            <p class="text-sm font-medium text-slate-500 leading-relaxed">
-                Identifique-se com seu email de acesso ao Feegow para utilizar a ErikIA
+            <p class="text-xs text-slate-400 leading-relaxed">
+                Digite o seu e-mail corporativo Docplanner. Seu nome de guerreiro será extraído e formatado de forma automática para evitar erros de escrita na planilha de progresso.
             </p>
 
             <div class="space-y-3.5 pt-2">
                 <div class="space-y-1">
-                    <label class="block text-[11px] font-bold text-slate-400 uppercase">E-mail de Trabalho:</label>
+                    <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1.5">E-mail de Trabalho:</label>
                     <div class="relative">
                         <span class="absolute left-3 top-3.5 text-slate-400">
                             <i class="fa-solid fa-envelope"></i>
                         </span>
+                        <!-- INPUT BRANCO AQUI -->
                         <input type="email" id="simulated-email" placeholder="nome.sobrenome@docplanner.com" 
-                               class="w-full bg-white border border-slate-300 focus:border-[#00b39b] focus:ring-2 focus:ring-[#00b39b]/20 rounded-xl pl-9 pr-3 py-3 text-sm text-slate-800 focus:outline-none placeholder-slate-400 transition-all shadow-sm">
+                               class="w-full bg-white border border-slate-300 focus:border-[#00b39b] rounded-xl pl-9 pr-3 py-3 text-sm text-slate-800 focus:outline-none placeholder-slate-400 transition-all shadow-inner">
                     </div>
-                    <span class="text-[9px] text-slate-500">Domínios autorizados: @docplanner.com ou @docplanner.com.br</span>
+                    <span class="text-[9px] text-slate-500 mt-1 block">Domínios autorizados: @docplanner.com ou @docplanner.com.br</span>
                 </div>
 
                 <button onclick="submitEmailAuth()" class="w-full bg-[#00b39b] hover:bg-[#009a84] text-white font-bold py-3 rounded-xl text-xs transition-all shadow-md shadow-[#00b39b]/10 flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-key"></i> Iniciar
+                    <i class="fa-solid fa-key"></i> Autenticar e Acessar
                 </button>
             </div>
         </div>
     </div>
 
+    <!-- Lógica Conversacional e Sincronização de Dados -->
     <script>
-        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyn0TGoPdaeEZnbk_fRbQjy3OILaFzz1ql93hJm4OTPmJB3inAHpA-_s12zoimcBjPB/exec";
+        // Endpoint do Google Apps Script (A Sua Planilha)
+        const appsScriptUrl = "https://script.google.com/macros/s/AKfycbyn0TGoPdaeEZnbk_fRbQjy3OILaFzz1ql93hJm4OTPmJB3inAHpA-_s12zoimcBjPB/exec";
 
+        // Estado Global do Aplicativo
         let activeAgentName = "";
         let activeAgentEmail = "";
         let isUserLogged = false;
         let lastQueryText = ""; 
+        
+        const interactionMemory = {};
+
+        // Base de Dados de Reserva Local (RAG Fallback)
+        const localKnowledgeBase = [
+            {
+                keywords: ["noa", "notes", "anotador", "ia", "resumo", "resumos", "transcrever", "microfone", "assento"],
+                topic: "Configurar NOA Notes",
+                title: "Como ativar, configurar e usar o NOA Notes no prontuário",
+                url: "https://ajuda.feegow.com/support/solutions/articles/67000743976-como-ativar-configurar-e-usar-o-noa-notes-no-prontu%C3%A1rio",
+                content: `Para habilitar o assistente de inteligência artificial NOA Notes no prontuário da clínica:\n\n1. **Ativar os Assentos:** Vá em **Configuração > Outras configurações**. Clique em **Gerenciar** e em **Adicionar Assentos** para designar quais profissionais terão o NOA ativo.\n2. **Permissão de Visualização:** O profissional deve possuir a permissão "Visualizar Resumos de IA" ativa no seu perfil de acesso.\n3. **Configuração de Visibilidade:** Acesse o **Cadastro do Profissional > Aba 'Compartilhamento'** e defina se os resumos serão Públicos, Privados ou Restritos.`
+            },
+            {
+                keywords: ["sms", "mensagem", "final de semana", "sábado", "domingo", "72h", "não enviado", "evento"],
+                topic: "SMS de Lembrete de FDS",
+                title: "O que fazer quando o envio de e-mail/SMS não é enviado no final de semana?",
+                url: "https://ajuda.feegow.com/support/solutions/articles/67000665594-o-que-fazer-quando-o-envio-de-e-mail-sms-n%C3%A3o-%C3%A9-enviado-no-final-de-semana-",
+                content: `Quando as mensagens automáticas de confirmação ou lembrete não são enviadas aos sábados e domingos, o motivo costuma ser a configuração de antecedência do evento:\n\n1. Acesse o menu **Configurações > Eventos de e-mail/SMS**.\n2. Localize e edite o evento correspondente à notificação de agenda.\n3. Se o evento estiver configurado com 72h, o envio de lembrete das consultas marcadas para segunda-feira será antecipado e realizado na **sexta-feira**, evitando envios fora do horário comercial.`
+            }
+        ];
 
         window.addEventListener('load', () => {
             openAuthModal();
@@ -181,8 +275,10 @@
         function showNotification(message, type = "error") {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
-            toast.className = `flex items-center gap-2 p-4 mb-2 text-xs font-semibold rounded-xl shadow-xl transition-all duration-300 max-w-sm pointer-events-auto ${
-                type === 'success' ? 'bg-emerald-500 text-white' : 'bg-[#1B2734] text-white border-l-4 border-rose-500'
+            toast.className = `flex items-center gap-2 p-4 mb-2 text-xs font-semibold rounded-xl shadow-xl transition-all duration-300 transform translate-y-0 opacity-100 max-w-sm pointer-events-auto ${
+                type === 'success' 
+                ? 'bg-emerald-500 text-white' 
+                : 'bg-[#1B2734] text-white border-l-4 border-rose-500'
             }`;
             
             toast.innerHTML = `
@@ -192,7 +288,8 @@
             container.appendChild(toast);
             
             setTimeout(() => {
-                toast.classList.add('opacity-0', 'translate-y-2');
+                toast.classList.replace('opacity-100', 'opacity-0');
+                toast.classList.add('translate-y-2');
                 setTimeout(() => toast.remove(), 300);
             }, 4000);
         }
@@ -205,8 +302,13 @@
             const emailInput = document.getElementById('simulated-email');
             const email = emailInput.value.trim().toLowerCase();
 
-            if (!email || !email.includes('@')) {
-                showNotification("Por favor, digite um e-mail válido!");
+            if (!email) {
+                showNotification("Por favor, digite o seu e-mail de trabalho!");
+                return;
+            }
+
+            if (!email.endsWith('@docplanner.com') && !email.endsWith('@docplanner.com.br')) {
+                showNotification("Domínio inválido! Use o seu e-mail corporativo da Docplanner.");
                 return;
             }
 
@@ -217,38 +319,49 @@
                 return part.charAt(0).toUpperCase() + part.slice(1);
             }).filter(part => part.length > 0).join(' ');
 
-            activeAgentName = formattedName || "Usuário";
+            if (formattedName.length === 0) {
+                showNotification("Formato de e-mail inválido antes do arroba!");
+                return;
+            }
+
+            activeAgentName = formattedName;
             activeAgentEmail = email;
             isUserLogged = true;
 
             document.getElementById('logged-user-box').classList.remove('hidden');
-            document.getElementById('user-display-name').innerText = activeAgentName;
+            document.getElementById('user-display-name').innerText = formattedName;
             document.getElementById('user-display-email').innerText = email;
 
             document.getElementById('chat-lock-overlay').classList.add('hidden');
             document.getElementById('login-modal').classList.add('hidden');
 
-            const welcomeHTML = `
-                <div class="flex items-start gap-3">
-                    <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-[#00b39b] to-[#00d1b5] text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-md">E</div>
-                    <div class="bg-white border border-slate-200 rounded-2xl rounded-tl-none p-4.5 max-w-[80%] shadow-sm">
-                        <span class="block text-[10px] font-bold uppercase tracking-wider mb-1 text-[#00b39b]">ErikIA</span>
-                        <p class="text-sm leading-relaxed text-slate-800">
-                            Olá, <strong>${activeAgentName}</strong>! Eu sou a ErikIA, assistente sênior baseada na central de suporte do Feegow. Como posso te ajudar hoje?
-                        </p>
-                    </div>
-                </div>
-            `;
-            document.getElementById('chat-messages').innerHTML += welcomeHTML;
-            showNotification(`Bem-vindo, ${activeAgentName}!`, "success");
+            appendSystemMessage(`Agente de Suporte identificado: <strong>${formattedName}</strong> (${email})`);
+            showNotification(`Bem-vindo, ${formattedName}!`, "success");
         }
 
         function handleLogout() {
             activeAgentName = "";
             activeAgentEmail = "";
             isUserLogged = false;
+
             document.getElementById('logged-user-box').classList.add('hidden');
             document.getElementById('chat-lock-overlay').classList.remove('hidden');
+            
+            appendSystemMessage("Login revogado.");
+        }
+
+        function appendSystemMessage(text) {
+            const container = document.getElementById('chat-messages');
+            const logBox = document.createElement('div');
+            logBox.className = "flex justify-center my-1.5";
+            logBox.innerHTML = `
+                <span class="bg-[#1B2734]/10 text-[#1B2734] border border-[#1B2734]/20 rounded-lg px-3 py-1 text-[10px] font-semibold flex items-center gap-1.5">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    ${text}
+                </span>
+            `;
+            container.appendChild(logBox);
+            container.scrollTop = container.scrollHeight;
         }
 
         function showTypingIndicator() {
@@ -259,7 +372,7 @@
             dots.innerHTML = `
                 <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-[#00b39b] to-[#00d1b5] text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-md">E</div>
                 <div class="bg-white border border-slate-200 rounded-2xl rounded-tl-none p-3 shadow-sm text-sm flex items-center gap-1.5 text-slate-400">
-                    <span class="font-semibold text-xs mr-1 text-[#00b39b]">ErikIA buscando...</span>
+                    <span class="font-semibold text-xs mr-1 text-[#00b39b]">ErikIA buscando na central</span>
                     <span class="h-1.5 w-1.5 bg-[#00b39b] rounded-full animate-bounce" style="animation-delay: 0ms"></span>
                     <span class="h-1.5 w-1.5 bg-[#00b39b] rounded-full animate-bounce" style="animation-delay: 150ms"></span>
                     <span class="h-1.5 w-1.5 bg-[#00b39b] rounded-full animate-bounce" style="animation-delay: 300ms"></span>
@@ -274,34 +387,51 @@
             if (typing) typing.remove();
         }
 
-        function appendMessage(sender, text, isUser = false, fbConfig = null) {
+        function appendMessage(sender, text, isUser = false, fbConfig = null, isMarkdown = false) {
             const container = document.getElementById('chat-messages');
             const wrapper = document.createElement('div');
             wrapper.className = `flex items-start gap-3 ${isUser ? 'justify-end' : ''}`;
 
-            let avatar = !isUser ? `<div class="w-8 h-8 rounded-full bg-gradient-to-tr from-[#00b39b] to-[#00d1b5] text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-md">E</div>` : '';
-            const bubbleStyle = isUser ? 'bg-[#00b39b] text-white rounded-2xl rounded-tr-none p-4 max-w-[80%] shadow-md text-sm font-medium' : 'bg-white border border-slate-200 rounded-2xl rounded-tl-none p-4.5 max-w-[80%] shadow-md text-sm text-[#1B2734]';
+            let avatar = '';
+            if (!isUser) {
+                avatar = `<div class="w-8 h-8 rounded-full bg-gradient-to-tr from-[#00b39b] to-[#00d1b5] text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-md">E</div>`;
+            }
+
+            const bubbleStyle = isUser 
+                ? 'bg-[#00b39b] text-white rounded-2xl rounded-tr-none p-4 max-w-[80%] shadow-md text-sm font-medium'
+                : 'bg-white border border-slate-200 rounded-2xl rounded-tl-none p-4.5 max-w-[80%] shadow-md text-sm text-[#1B2734]';
+
             const userLabel = isUser ? 'Você' : 'ErikIA';
             const labelColor = isUser ? 'text-[#e6fffc]' : 'text-[#00b39b]';
 
             let msgContent = text;
-            if (!isUser && typeof marked !== 'undefined') {
-                 msgContent = marked.parse(text);
+            if (isMarkdown && typeof marked !== 'undefined') {
+                msgContent = marked.parse(text);
+            } else {
+                msgContent = text.replace(/\n/g, '<br>');
             }
 
             const msgId = fbConfig ? fbConfig.id : 'msg-' + Date.now();
+
             let fbContent = '';
-            
             if (fbConfig) {
                 fbContent = `
                     <div class="mt-4 pt-3 border-t border-slate-100 flex flex-col gap-2">
-                        <span class="text-xs font-bold text-slate-600">Esta resposta foi útil?</span>
-                        <div class="flex flex-wrap items-center gap-2" id="fb-container-${fbConfig.id}">
-                            <button onclick="voteFeedback('${fbConfig.id}', 'Sim')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-semibold px-4 py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1.5">
-                                Sim
-                            </button>
-                            <button onclick="voteFeedback('${fbConfig.id}', 'Não')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-semibold px-4 py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1.5">
-                                Não
+                        <span class="text-xs font-bold text-slate-600">${fbConfig.question}</span>
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <div class="flex gap-2" id="fb-container-${fbConfig.id}">
+                                <button onclick="voteFeedback('${fbConfig.id}', '${fbConfig.topic}', 'Sim')" 
+                                        class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-semibold px-4 py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1.5">
+                                    <i class="fa-solid fa-thumbs-up"></i> Sim
+                                </button>
+                                <button onclick="voteFeedback('${fbConfig.id}', '${fbConfig.topic}', 'Não')" 
+                                        class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-semibold px-4 py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1.5">
+                                    <i class="fa-solid fa-thumbs-down"></i> Não
+                                </button>
+                            </div>
+                            <button onclick="copyResponseText('${msgId}')" id="copy-btn-${msgId}" 
+                                    class="bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 font-semibold px-4 py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1.5">
+                                <i class="fa-solid fa-copy"></i> Copiar
                             </button>
                         </div>
                     </div>
@@ -309,53 +439,86 @@
             }
 
             wrapper.innerHTML = `
-                ${avatar}
+                ${!isUser ? avatar : ''}
                 <div class="${bubbleStyle}">
                     <span class="block text-[10px] font-bold uppercase tracking-wider mb-1 ${labelColor}">${userLabel}</span>
-                    <div class="prose-chat-response leading-relaxed font-normal">${msgContent}</div>
+                    <div id="msg-content-${msgId}" class="prose-chat-response leading-relaxed font-normal">${msgContent}</div>
                     ${fbContent}
                 </div>
             `;
+
             container.appendChild(wrapper);
             container.scrollTop = container.scrollHeight;
         }
 
-        async function fetchGeminiResponse(userMessage) {
-            try {
-                const response = await fetch("https://erikiafeegow.vercel.app/api/chat", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ message: userMessage })
-                });
-
-                if (!response.ok) {
-                    const err = await response.json();
-                    throw new Error((err.error || "Erro") + " - " + (err.details || ""));
-                }
-                const data = await response.json();
-                return data.response;
-            } catch (error) {
-                console.error("Erro no fetch:", error);
-                return `Erro de comunicação: ${error.message}`;
+        function copyResponseText(id) {
+            const el = document.getElementById(`msg-content-${id}`);
+            if (!el) return;
+            const text = el.innerText;
+            const temp = document.createElement('textarea');
+            temp.value = text;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
+            
+            showNotification("Resposta copiada para a área de transferência!", "success");
+            
+            const btn = document.getElementById(`copy-btn-${id}`);
+            if (btn) {
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = `<i class="fa-solid fa-check text-emerald-500"></i> Copiado!`;
+                btn.className = "bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-semibold px-4 py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1.5 shadow-sm";
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalHtml;
+                    btn.className = "bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 font-semibold px-4 py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1.5";
+                }, 2000);
             }
         }
 
-        function categorizeInteraction(queryText) {
-            const corpus = queryText.toLowerCase();
-            if (corpus.includes("cadastro") || corpus.includes("profissional") || corpus.includes("paciente")) return "Cadastros";
-            if (corpus.includes("configurar") || corpus.includes("permissão")) return "Configurações";
-            if (corpus.includes("agenda") || corpus.includes("agendamento") || corpus.includes("horário")) return "Agenda";
-            if (corpus.includes("prontuário") || corpus.includes("noa") || corpus.includes("receita")) return "Prontuário";
-            if (corpus.includes("financeiro") || corpus.includes("pagamento") || corpus.includes("receber")) return "Financeiro";
-            if (corpus.includes("estoque") || corpus.includes("produto") || corpus.includes("lote")) return "Estoque";
+        // --- INTEGRAÇÃO COM A VERCEL CORRIGIDA ---
+        async function queryGemini(query) {
+            const endpoint = "https://erikiafeegow.vercel.app/api/chat";
+
+            try {
+                // Algoritmo de envio enxuto repassando apenas "message"
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: query }) // APENAS A PERGUNTA ATUAL
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    // Repassa o erro exato que o seu servidor Vercel pegou do Google
+                    throw new Error(data.details || data.error || "Erro desconhecido na Vercel.");
+                }
+
+                // O novo back-end devolve a string pronta dentro de "response"
+                return { status: "success", text: data.response };
+
+            } catch (err) {
+                console.warn("Falha de comunicação com a API Vercel:", err);
+                return { status: "error", errorText: err.message };
+            }
+        }
+
+        function categorizeCombinedInteraction(queryText, responseText) {
+            const corpus = (queryText + " " + responseText).toLowerCase();
+            if (corpus.includes("cadastro") || corpus.includes("paciente")) return "Cadastros";
+            if (corpus.includes("configurar") || corpus.includes("parâmetro")) return "Configurações";
+            if (corpus.includes("agenda") || corpus.includes("horário")) return "Agenda";
+            if (corpus.includes("prontuário") || corpus.includes("noa")) return "Prontuário";
+            if (corpus.includes("financeiro") || corpus.includes("pagamento")) return "Financeiro";
             if (corpus.includes("faturamento") || corpus.includes("guia") || corpus.includes("tiss")) return "Faturamento";
-            if (corpus.includes("relatório") || corpus.includes("planilha")) return "Relatórios";
             return "Outros";
         }
 
         async function handleQueryInput() {
             if (!isUserLogged) {
-                showNotification("Faça login para consultar a ErikIA!");
+                showNotification("Por favor, faça login corporativo para consultar a ErikIA!");
                 return;
             }
 
@@ -367,35 +530,76 @@
             input.value = '';
             lastQueryText = query;
 
+            showTypingIndicator();
+
             const isGreeting = ["oi", "ola", "olá", "bom dia", "boa tarde", "boa noite", "tudo bem"].includes(query.toLowerCase().replace(/[!?.]/g, ''));
             if (isGreeting) {
                 setTimeout(() => {
-                    appendMessage('ErikIA', `Olá, ${activeAgentName}! Qual dúvida técnica nós vamos resolver hoje? 💜`);
-                }, 500);
+                    removeTypingIndicator();
+                    appendMessage('ErikIA', `Olá, ${activeAgentName}! Tudo bem? Qual dúvida ou configuração técnica do Feegow nós vamos analisar hoje? 💜`);
+                }, 800);
                 return;
             }
 
-            showTypingIndicator();
-            const resultText = await fetchGeminiResponse(query);
+            const cleanQuery = query.replace(/[^\w\s]/g, '');
+            const querySummary = cleanQuery.split(' ').slice(0, 5).join(' ');
+
+            // Envia para o Back-end da Vercel
+            const result = await queryGemini(query);
             removeTypingIndicator();
 
             const fbId = 'fb-' + Date.now();
-            appendMessage('ErikIA', resultText, false, { id: fbId });
+
+            if (result.status === "success") {
+                interactionMemory[fbId] = { query: query, response: result.text };
+                appendMessage('ErikIA', result.text, false, {
+                    id: fbId,
+                    topic: querySummary,
+                    question: "Esta resposta te ajudou a resolver o caso?"
+                }, true);
+
+            } else if (result.status === "error") {
+                // MOSTRA O ERRO REAL (COTA) DO GOOGLE NA TELA SE OCORRER
+                const errorMsg = `**⚠️ Falha de Comunicação**\n\nRecebemos a seguinte rejeição da API:\n\`${result.errorText}\`\n\n*Tentando recuperar pelo banco de dados local...*`;
+                appendMessage('ErikIA', errorMsg, false, null, true);
+
+                // Ativação do RAG Local de segurança
+                setTimeout(() => {
+                    let matchedDoc = null;
+                    const lowerQuery = query.toLowerCase();
+                    for (let doc of localKnowledgeBase) {
+                        const matched = doc.keywords.some(kw => lowerQuery.includes(kw));
+                        if (matched) {
+                            matchedDoc = doc;
+                            break;
+                        }
+                    }
+
+                    if (matchedDoc) {
+                        const fallbackBody = `Oi! Vamos analisar isso juntos. 💜 (Base de Segurança Local Ativada)\n\nAqui está o procedimento para **${matchedDoc.topic}**:\n\n${matchedDoc.content}\n\n📚 *Fonte:* [${matchedDoc.title}](${matchedDoc.url})`;
+                        interactionMemory[fbId] = { query: query, response: matchedDoc.content };
+                        appendMessage('ErikIA', fallbackBody, false, { id: fbId, topic: matchedDoc.topic, question: "Ajudou?" }, true);
+                    } else {
+                        appendMessage('ErikIA', `Consultei a nossa central de ajuda, mas a conexão falhou e não encontrei dados na memória local sobre este tema. Escale esta dúvida para a sua liderança!`);
+                    }
+                }, 1500);
+            }
         }
 
-        async function voteFeedback(id, value) {
+        async function voteFeedback(id, topicSummary, value) {
             const container = document.getElementById(`fb-container-${id}`);
             if (!container) return;
 
-            const finalCategory = categorizeInteraction(lastQueryText);
-            const dateStr = new Date().toLocaleString('pt-BR');
+            const savedInteraction = interactionMemory[id] || { query: lastQueryText, response: "" };
+            const finalCategory = categorizeCombinedInteraction(savedInteraction.query, savedInteraction.response);
+            const dateStr = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
 
             const payload = {
-                data: dateStr,
-                usuario: activeAgentName,
-                pesquisa: lastQueryText,
-                categoria: finalCategory,
-                resolucao: value
+                "data_uso": dateStr,
+                "nome_agente": activeAgentName,
+                "topico_duvida": topicSummary,
+                "categoria": finalCategory,
+                "ajuda_efetiva": value
             };
 
             const textColor = value === 'Sim' ? 'text-emerald-500' : 'text-rose-500';
@@ -407,15 +611,16 @@
             `;
 
             try {
-                await fetch(APPS_SCRIPT_URL, {
+                await fetch(appsScriptUrl, {
                     method: 'POST',
                     mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-                showNotification("Feedback salvo na planilha!", "success");
+                showNotification("Registro salvo no Google Sheets corporativo!", "success");
             } catch (err) {
-                console.error("Erro:", err);
+                console.error("Erro ao enviar feedback:", err);
+                showNotification("Erro de rede. Feedback salvo apenas localmente.");
             }
         }
     </script>
