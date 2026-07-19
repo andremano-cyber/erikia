@@ -26,7 +26,7 @@ export default async function handler(req, res) {
             return res.status(500).json({ error: 'Chave da API ausente no servidor.' });
         }
 
-        const modelName = "gemini-1.5-flash"; 
+        const modelName = "gemini-3.1-flash-lite"; 
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`;
 
         // Corpo da requisição com a pergunta atual e a Ferramenta de Busca Ativa
