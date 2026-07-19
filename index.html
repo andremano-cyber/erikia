@@ -13,6 +13,9 @@
     <!-- Marked.js para renderização de Markdown -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
+    <!-- CONEXÃO COM O BANCO DE DADOS LOCAL EXTERNO -->
+    <script src="base_local.js"></script>
+
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -101,18 +104,18 @@
 
             <!-- Triplo Status Check (API + Search + Local RAG) -->
             <div class="flex items-center gap-1.5 sm:gap-2">
-                <span title="Motor Gemini Operacional" class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] sm:text-xs px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5 shadow-sm cursor-help">
-                    <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span id="api-status-badge" title="Verificando Conexão..." class="bg-slate-50 text-slate-500 border border-slate-200 text-[10px] sm:text-xs px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5 shadow-sm cursor-help transition-colors">
+                    <i class="fa-solid fa-spinner fa-spin text-slate-400"></i>
                     API
                 </span>
                 
-                <span title="Ferramenta de Pesquisa na Web Integrada" class="bg-blue-50 text-blue-700 border border-blue-200 text-[10px] sm:text-xs px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5 shadow-sm cursor-help">
-                    <i class="fa-brands fa-google text-blue-500"></i>
+                <span id="search-status-badge" title="Verificando Conexão..." class="bg-slate-50 text-slate-500 border border-slate-200 text-[10px] sm:text-xs px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5 shadow-sm cursor-help transition-colors">
+                    <i class="fa-solid fa-spinner fa-spin text-slate-400"></i>
                     Search
                 </span>
 
-                <span title="Base de Conhecimento Local Rápida" class="bg-violet-50 text-violet-700 border border-violet-200 text-[10px] sm:text-xs px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5 shadow-sm cursor-help">
-                    <i class="fa-solid fa-database text-violet-500"></i>
+                <span id="rag-status-badge" title="Verificando Base Local..." class="bg-slate-50 text-slate-500 border border-slate-200 text-[10px] sm:text-xs px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5 shadow-sm cursor-help transition-colors">
+                    <i class="fa-solid fa-spinner fa-spin text-slate-400"></i>
                     Local RAG
                 </span>
             </div>
@@ -231,107 +234,95 @@
 
     <!-- Lógica Conversacional e Sincronização de Dados -->
     <script>
-        // Endpoint do Google Apps Script (A Sua Planilha)
-        const appsScriptUrl = "https://script.google.com/macros/s/AKfycbyn0TGoPdaeEZnbk_fRbQjy3OILaFzz1ql93hJm4OTPmJB3inAHpA-_s12zoimcBjPB/exec";
+        // Endpoint do Google Apps Script
+        const appsScriptUrl = "https://script.google.com/macros/s/AKfycbwB5Y5Yp0dPo_IcJHaSoIf0xhRjzM3DTFUNJ0XvsDe68hQ0Am7lXCqvJftIMlNKC8_2/exec";
 
         // Estado Global do Aplicativo
         let activeAgentName = "";
         let activeAgentEmail = "";
         let isUserLogged = false;
-        let lastQueryText = ""; 
+        let lastQueryText = ""; // Armazena a última pergunta feita temporariamente
         
+        // Memória de Interações para Classificação Inteligente Cruzada (ID -> { pergunta, resposta })
         const interactionMemory = {};
 
-        // BASE LOCAL (RAG OFFLINE) COM OS 12 TEMAS MAIS CRÍTICOS
-        const localKnowledgeBase = [
-            {
-                keywords: ["senha", "esqueci", "reset", "resetar senha", "acesso bloqueado", "desbloquear", "login"],
-                topic: "Reset de Senha do Usuário",
-                title: "Como redefinir a senha do usuário Feegow?",
-                url: "https://ajuda.feegow.com/",
-                content: "Para ajudar um usuário que esqueceu a senha ou está bloqueado:\n\n1. Peça para o usuário acessar a tela de login inicial do Feegow.\n2. Ele deve clicar em **'Esqueci minha senha'**.\n3. Inserir o e-mail cadastrado e clicar em Enviar.\n4. Ele receberá um link temporário no e-mail para cadastrar uma nova senha.\n\n💡 *Dica da ErikIA:* Se o e-mail não chegar, verifique em **Cadastros > Funcionários** se o e-mail no sistema está correto e sem espaços no final."
-            },
-            {
-                keywords: ["cadastrar", "novo funcionário", "recepcionista", "colaborador", "acesso as agendas", "permissões"],
-                topic: "Cadastro de Novo Funcionário",
-                title: "Como cadastrar um novo funcionário?",
-                url: "https://ajuda.feegow.com/",
-                content: "Para cadastrar um novo colaborador (ex: Recepção):\n\n1. Acesse **Cadastros > Funcionários** e clique em **+Inserir**.\n2. Preencha os dados obrigatórios.\n3. Em 'Acesso às Agendas', selecione quais ele poderá ver (deixe em branco para todas).\n4. Clique em Salvar.\n5. Na aba **Dados de Acesso**, crie o Login e Senha.\n6. Clique no ícone de Cadeado na lista para configurar as **Permissões** de tela."
-            },
-            {
-                keywords: ["tiss", "regime", "atendimento", "guia", "sadt", "adequações", "ans"],
-                topic: "Regime de Atendimento TISS",
-                title: "Adequações ao Padrão TISS - Regime de Atendimento",
-                url: "https://ajuda.feegow.com/",
-                content: "Para evitar glosas, é obrigatório preencher o Regime de Atendimento:\n\n1. Ao gerar uma Guia de SP/SADT, localize o campo **'Regime de Atendimento'**.\n2. Informe uma opção válida pela ANS: Ambulatorial, Domiciliar, Internação, Pronto-Socorro ou Telessaúde.\n3. Salve a guia. Isso garante o XML correto."
-            },
-            {
-                keywords: ["glosa", "recurso", "recurso de glosa", "faturamento", "demonstrativo", "retorno"],
-                topic: "Recurso de Glosa",
-                title: "Como realizar um Recurso de Glosa?",
-                url: "https://ajuda.feegow.com/",
-                content: "Quando um procedimento é negado pela operadora:\n\n1. Acesse **Faturamento > Retorno TISS** (ou Recursos de Glosa).\n2. Localize o lote ou a guia.\n3. Preencha o código do motivo da glosa.\n4. Justifique o recurso e anexe documentos.\n5. Gere o novo lote de recurso para reenvio."
-            },
-            {
-                keywords: ["bloqueio", "agenda", "afastamento", "férias", "congresso", "indisponível"],
-                topic: "Bloqueio de Agenda por Afastamento",
-                title: "Como bloquear a agenda de um profissional?",
-                url: "https://ajuda.feegow.com/",
-                content: "Para bloquear a agenda para férias ou congressos:\n\n1. Acesse **Agenda > Afastamentos**.\n2. Clique em **+Novo Afastamento**.\n3. Selecione o Profissional e o Período.\n4. Insira o motivo.\n\n💡 *Dica da ErikIA:* O sistema perguntará se você deseja manter os agendados ou transferi-los para remarcação."
-            },
-            {
-                keywords: ["sms", "mensagem", "final de semana", "72h", "não enviado", "evento", "status"],
-                topic: "Disparo Automático de SMS",
-                title: "Por que os SMS não chegam no fim de semana?",
-                url: "https://ajuda.feegow.com/",
-                content: "Isso ocorre por causa da antecedência configurada:\n\n1. Vá em **Configurações > Agenda > Status/Eventos**.\n2. Edite o evento de e-mail/SMS correspondente.\n3. Verifique se o envio está para **72h de antecedência**.\n4. Se sim, consultas de segunda-feira terão os avisos enviados na sexta-feira."
-            },
-            {
-                keywords: ["noa", "notes", "anotador", "ia", "prontuário", "resumo", "assento"],
-                topic: "Ativação do NOA Notes",
-                title: "Como configurar o assistente de IA NOA Notes?",
-                url: "https://ajuda.feegow.com/",
-                content: "Para habilitar a IA no prontuário:\n\n1. Acesse **Configuração > Outras configurações** e vá em Gerenciar Assentos para o NOA.\n2. O profissional precisa da permissão *'Visualizar Resumos de IA'* ativada.\n3. No cadastro do Profissional, aba 'Compartilhamento', defina se os resumos serão Públicos, Privados ou Restritos."
-            },
-            {
-                keywords: ["estoque", "lote", "validade", "dar baixa", "inventário", "produto"],
-                topic: "Baixa de Estoque Automática",
-                title: "Como configurar a baixa de estoque?",
-                url: "https://ajuda.feegow.com/",
-                content: "Para registrar saída de um produto:\n\n**Manual:** No atendimento, vá em 'Produtos Utilizados' (ícone maleta roxa) e registre o uso.\n**Pelo Cadastro:** Em **Estoque > Listar**, localize o produto e clique em 'Saída' (requer permissão ativada no produto)."
-            },
-            {
-                keywords: ["conta do paciente", "extrato", "faturados", "receber", "pendências", "gerar a partir do agendamento"],
-                topic: "Conta do Paciente",
-                title: "Como lançar uma Conta a partir do agendamento?",
-                url: "https://ajuda.feegow.com/",
-                content: "1. Localize a conta do paciente no **Prontuário**.\n2. Acesse a aba **Não Faturados**.\n3. Clique em **'Gerar a partir do agendamento'**.\n4. Marque o procedimento, selecione 'Particular' e salve.\n5. O atendimento constará agora na aba **Faturados** e no financeiro."
-            },
-            {
-                keywords: ["certificado digital", "a1", "assinar", "receita digital", "memed", "prescrição"],
-                topic: "Configurar Certificado Digital A1",
-                title: "Como inserir o Certificado Digital?",
-                url: "https://ajuda.feegow.com/",
-                content: "Para o médico assinar digitalmente:\n\n1. Acesse **Cadastros > Profissionais** e edite o médico.\n2. Na aba **Documentos**, localize Certificado Digital.\n3. Faça o upload do arquivo tipo **A1** (.pfx).\n4. Insira a senha e clique em Salvar."
-            },
-            {
-                keywords: ["telemedicina", "consulta online", "link", "termo", "videochamada"],
-                topic: "Configurar Telemedicina",
-                title: "Como configurar a Telemedicina?",
-                url: "https://ajuda.feegow.com/",
-                content: "Para habilitar consultas online:\n\n1. Em **Cadastros > Procedimentos**, edite a consulta.\n2. Habilite **'Procedimento Telemedicina'** para gerar links.\n3. Configure Modelos de Eventos de Email/SMS usando o link da sala.\n4. Habilite o Termo de Consentimento Padrão em Outras Configurações se necessário."
-            },
-            {
-                keywords: ["xml", "nota fiscal", "entrada", "compra", "fornecedor"],
-                topic: "Entrada via XML de Nota Fiscal",
-                title: "Como lançar produtos pelo XML?",
-                url: "https://ajuda.feegow.com/",
-                content: "Para automatizar entrada de estoque:\n\n1. Vá em Conta a Pagar e anexe o **XML da NF-e**.\n2. O sistema listará os produtos da nota.\n3. Para cada item, faça o vínculo (de/para) apontando para qual produto do seu Estoque Feegow ele deve somar.\n4. Confirme para injetar os itens automaticamente."
-            }
-        ];
+        // Variável de controle do status de carregamento do RAG
+        let isRagExternalLoaded = true;
 
+        async function checkExternalApiStatus() {
+            const apiBadge = document.getElementById('api-status-badge');
+            const searchBadge = document.getElementById('search-status-badge');
+            
+            try {
+                // Dispara um ping rápido (GET) para a Vercel sem queimar tokens do Gemini
+                const response = await fetch("https://erikiafeegow.vercel.app/api/chat", { method: 'GET' });
+                
+                if (response.ok) {
+                    // API e Search Online
+                    apiBadge.className = "bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] sm:text-xs px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5 shadow-sm cursor-help transition-colors";
+                    apiBadge.innerHTML = `<span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span> API`;
+                    apiBadge.title = "Motor Gemini Operacional (Conexão OK)";
+
+                    searchBadge.className = "bg-blue-50 text-blue-700 border border-blue-200 text-[10px] sm:text-xs px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5 shadow-sm cursor-help transition-colors";
+                    searchBadge.innerHTML = `<i class="fa-brands fa-google text-blue-500"></i> Search`;
+                    searchBadge.title = "Integração com Google Search Ativa e Autorizada";
+                } else {
+                    throw new Error("Erro no servidor");
+                }
+            } catch (error) {
+                // API e Search Offline
+                const errClass = "bg-rose-50 text-rose-700 border border-rose-200 text-[10px] sm:text-xs px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5 shadow-sm cursor-help transition-colors";
+                
+                apiBadge.className = errClass;
+                apiBadge.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-500"></i> API Off`;
+                apiBadge.title = "Falha de conexão com a Vercel ou Gemini Indisponível";
+
+                searchBadge.className = errClass;
+                searchBadge.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-500"></i> Search Off`;
+                searchBadge.title = "Sem comunicação com a rede externa";
+                
+                setTimeout(() => showNotification("Aviso: Falha de conexão com a API externa. A ErikIA operará apenas com a base de dados local.", "error"), 2000);
+            }
+        }
+
+        // A VARIÁVEL localKnowledgeBase AGORA É CARREGADA EXTERNAMENTE VIA base_local.js
+        // MANTIVEMOS APENAS UMA TRAVA DE SEGURANÇA CASO O ARQUIVO EXTERNO FALHE EM CARREGAR
+        if (typeof localKnowledgeBase === 'undefined') {
+            console.warn("⚠️ Arquivo base_local.js não foi carregado! Usando fallback mínimo de segurança.");
+            isRagExternalLoaded = false;
+            var localKnowledgeBase = [
+                {
+                    keywords: ["noa", "notes", "anotador"],
+                    topic: "Configurar NOA Notes",
+                    title: "Como configurar o NOA?",
+                    url: "https://ajuda.feegow.com/",
+                    content: "Vá em Configuração > Outras configurações e adicione os assentos."
+                }
+            ];
+        }
+
+        // Abre o modal de login ao carregar a página
         window.addEventListener('load', () => {
             openAuthModal();
+            
+            checkExternalApiStatus();
+            
+            // Validação e Atualização Visual do Status Check do Local RAG
+            const ragBadge = document.getElementById('rag-status-badge');
+            if (ragBadge) {
+                if (isRagExternalLoaded && typeof localKnowledgeBase !== 'undefined' && localKnowledgeBase.length > 0) {
+                    ragBadge.className = "bg-violet-50 text-violet-700 border border-violet-200 text-[10px] sm:text-xs px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5 shadow-sm cursor-help transition-colors";
+                    ragBadge.innerHTML = `<i class="fa-solid fa-database text-violet-500"></i> Local RAG`;
+                    ragBadge.title = `Base Local Conectada (${localKnowledgeBase.length} artigos disponíveis)`;
+                } else {
+                    ragBadge.className = "bg-rose-50 text-rose-700 border border-rose-200 text-[10px] sm:text-xs px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5 shadow-sm cursor-help transition-colors";
+                    ragBadge.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-500 animate-pulse"></i> RAG Offline`;
+                    ragBadge.title = "Falha ao carregar o arquivo externo base_local.js";
+                    
+                    // Dispara um alerta visual flutuante para avisar que a base falhou
+                    setTimeout(() => showNotification("Aviso: O arquivo base_local.js não foi encontrado. RAG Local inoperante.", "error"), 1000);
+                }
+            }
         });
 
         function showNotification(message, type = "error") {
