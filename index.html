@@ -234,8 +234,8 @@
 
     <!-- Lógica Conversacional e Sincronização de Dados -->
     <script>
-        // Endpoint do Google Apps Script
-        const appsScriptUrl = "https://script.google.com/macros/s/AKfycbwB5Y5Yp0dPo_IcJHaSoIf0xhRjzM3DTFUNJ0XvsDe68hQ0Am7lXCqvJftIMlNKC8_2/exec";
+        // Endpoint do Google Apps Script (COLE A SUA URL AQUI ENTRE AS ASPAS)
+        const appsScriptUrl = "https://script.google.com/macros/s/AKfycbzjStvdsY3gncERwl1e2tnzWw1yfBCWerGGx1DxVjY/exec";
 
         // Estado Global do Aplicativo
         let activeAgentName = "";
@@ -658,12 +658,12 @@
                     <i class="fa-solid ${iconClass}"></i> Feedback registrado!
                 </span>
             `;
-
+            // Envia POST assíncrono para o Web App remoto da planilha
             try {
                 await fetch(appsScriptUrl, {
                     method: 'POST',
                     mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(payload)
                 });
                 showNotification("Registro salvo no Google Sheets corporativo!", "success");
