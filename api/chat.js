@@ -45,7 +45,7 @@ module.exports = async (req, res) => {
                 parts: [{ text: "Você é a ErikIA, assistente de suporte da Feegow. Responda apenas com base nos resultados da pesquisa (ajuda.feegow.com). Seja técnica, use bullet points e seja objetiva. Se não encontrar a resposta na pesquisa, diga que não localizou artigos sobre o tema." }]
             },
             generationConfig: {
-                maxOutputTokens: 800, // Aumentado para evitar o corte por "limite de tokens" na saída
+                maxOutputTokens: 2000, // Aumentado para 2000: Permite passo a passos detalhados sem cortes
                 temperature: 0.1
             }
         };
