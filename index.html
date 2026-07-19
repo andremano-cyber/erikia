@@ -532,23 +532,45 @@
 
             showTypingIndicator();
 
-            const isGreeting = ["oi", "ola", "olá", "bom dia", "boa tarde", "boa noite", "tudo bem"].includes(query.toLowerCase().replace(/[!?.]/g, ''));
+            const isGreeting = ["oi", "ola", "olá", "bom dia", "boa tarde", "boa noite", "tudo bem", "tudo bom"].includes(query.toLowerCase().replace(/[!?.]/g, ''));
             if (isGreeting) {
                 setTimeout(() => {
                     removeTypingIndicator();
                     appendMessage('ErikIA', `Olá, ${activeAgentName}! Tudo bem? Qual dúvida ou configuração técnica do Feegow nós vamos analisar hoje? 💜`);
                 }, 800);
-                return;
+                return; // Encerra aqui, não chama a API
             }
 
             const cleanQuery = query.replace(/[^\w\s]/g, '');
             const querySummary = cleanQuery.split(' ').slice(0, 5).join(' ');
+            const fbId = 'fb-' + Date.now();
 
-            // Envia para o Back-end da Vercel
+            let matchedDoc = null;
+            const lowerQuery = query.toLowerCase();
+            
+            // Regra de match: a pergunta do usuário precisa conter as palavras-chave principais do artigo local
+            for (let doc of localKnowledgeBase) {
+                // Checa se a pergunta inclui pelo menos uma keyword essencial daquele tópico
+                const matched = doc.keywords.some(kw => lowerQuery.includes(kw.toLowerCase()));
+                if (matched) {
+                    matchedDoc = doc;
+                    break;
+                }
+            }
+
+            if (matchedDoc) {
+                // Achou na base local! Responde imediatamente sem gastar API
+                setTimeout(() => {
+                    removeTypingIndicator();
+                    const localBody = `Achei rapidinho na nossa base local! 💜\n\nAqui está o procedimento para **${matchedDoc.topic}**:\n\n${matchedDoc.content}\n\n📚 *Fonte:* [${matchedDoc.title}](${matchedDoc.url})`;
+                    interactionMemory[fbId] = { query: query, response: matchedDoc.content };
+                    appendMessage('ErikIA', localBody, false, { id: fbId, topic: matchedDoc.topic, question: "Esta resposta resolveu a dúvida?" }, true);
+                }, 600);
+                return; // Encerra aqui, não chama a API
+            }
+
             const result = await queryGemini(query);
             removeTypingIndicator();
-
-            const fbId = 'fb-' + Date.now();
 
             if (result.status === "success") {
                 interactionMemory[fbId] = { query: query, response: result.text };
@@ -559,30 +581,8 @@
                 }, true);
 
             } else if (result.status === "error") {
-                // MOSTRA O ERRO REAL (COTA) DO GOOGLE NA TELA SE OCORRER
-                const errorMsg = `**⚠️ Falha de Comunicação**\n\nRecebemos a seguinte rejeição da API:\n\`${result.errorText}\`\n\n*Tentando recuperar pelo banco de dados local...*`;
+                const errorMsg = `**⚠️ Falha de Comunicação**\n\nRecebemos a seguinte rejeição da API:\n\`${result.errorText}\`\n\nPor favor, aguarde alguns instantes e tente novamente.`;
                 appendMessage('ErikIA', errorMsg, false, null, true);
-
-                // Ativação do RAG Local de segurança
-                setTimeout(() => {
-                    let matchedDoc = null;
-                    const lowerQuery = query.toLowerCase();
-                    for (let doc of localKnowledgeBase) {
-                        const matched = doc.keywords.some(kw => lowerQuery.includes(kw));
-                        if (matched) {
-                            matchedDoc = doc;
-                            break;
-                        }
-                    }
-
-                    if (matchedDoc) {
-                        const fallbackBody = `Oi! Vamos analisar isso juntos. 💜 (Base de Segurança Local Ativada)\n\nAqui está o procedimento para **${matchedDoc.topic}**:\n\n${matchedDoc.content}\n\n📚 *Fonte:* [${matchedDoc.title}](${matchedDoc.url})`;
-                        interactionMemory[fbId] = { query: query, response: matchedDoc.content };
-                        appendMessage('ErikIA', fallbackBody, false, { id: fbId, topic: matchedDoc.topic, question: "Ajudou?" }, true);
-                    } else {
-                        appendMessage('ErikIA', `Consultei a nossa central de ajuda, mas a conexão falhou e não encontrei dados na memória local sobre este tema. Escale esta dúvida para a sua liderança!`);
-                    }
-                }, 1500);
             }
         }
 
