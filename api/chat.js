@@ -19,6 +19,22 @@ module.exports = async (req, res) => {
             return res.status(400).json({ error: "A mensagem está vazia." });
         }
 
+        // =========================================================================
+        // SISTEMA DE CACHE EM MEMÓRIA (Map)
+        // =========================================================================
+        // Variável global fora do escopo da requisição para sobreviver em contêineres quentes
+        if (!global.responseCache) {
+            global.responseCache = new Map();
+        }
+        
+        // Normaliza a pergunta (minúsculas e sem espaços extras) para garantir que "Teste" e "teste " sejam a mesma chave
+        const cacheKey = message.toLowerCase().trim();
+
+        if (global.responseCache.has(cacheKey)) {
+            console.log("⚡ Resposta servida direto do Cache na Vercel!");
+            return res.status(200).json({ response: global.responseCache.get(cacheKey) });
+        }
+
         const apiKey = process.env.GEMINI_API_KEY;
         if (!apiKey) {
             return res.status(500).json({ error: "Chave da API não configurada no servidor da Vercel." });
@@ -80,8 +96,18 @@ module.exports = async (req, res) => {
             return res.status(500).json({ error: "O Google não retornou nenhum texto válido." });
         }
 
+        const textResponse = candidate.content.parts[0].text;
+
+        // Salva a nova resposta no Cache limitando o tamanho para não estourar a memória (max 200 itens)
+        if (global.responseCache.size >= 200) {
+            // Remove o primeiro item adicionado se atingir o limite
+            const firstKey = global.responseCache.keys().next().value;
+            global.responseCache.delete(firstKey);
+        }
+        global.responseCache.set(cacheKey, textResponse);
+
         // Retorna o texto formatado para o front-end
-        res.status(200).json({ response: candidate.content.parts[0].text });
+        res.status(200).json({ response: textResponse });
 
     } catch (error) {
         console.error("Erro interno do Servidor:", error);
