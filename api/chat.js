@@ -12,6 +12,13 @@ module.exports = async (req, res) => {
         return;
     }
 
+    // =========================================================================
+    // ROTA DE HEALTH CHECK (Para atualizar os Badges no Front-end sem gastar tokens)
+    // =========================================================================
+    if (req.method === 'GET') {
+        return res.status(200).json({ status: "online", message: "Vercel, Gemini API e Google Search Grounding operacionais." });
+    }
+
     try {
         const { message } = req.body;
         
